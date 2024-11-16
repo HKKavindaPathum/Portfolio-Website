@@ -1,0 +1,75 @@
+:root {
+  --background-color: #ffffff;
+  --btn-color: #0987f2;
+  --btn-hover-color: #0056a5; 
+  --btn-text-color: #ffffff;
+  --text-color: #242e49;
+  --footer-text-color: #888888;
+  --highlight-color: #ff6b6b;
+  --h1-color: #b4182d;
+  --h2-color: #19305c;
+  --h3-color: #413b61;
+  --divider-color: #e0e0e0; 
+}
+
+[data-theme='dark'] {
+  --background-color: #121212;
+  --btn-color: #0987f2;
+  --btn-hover-color: #cc5555; 
+  --btn-text-color: #ffffff; 
+  --text-color: #e0e0e0;
+  --footer-text-color: #aaaaaa;
+  --h1-color: #dd142f;
+  --h2-color: #ffffff;
+  --h3-color: #ffffff;
+  --divider-color: #444444; 
+}
+
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  padding:0;
+  max-width: 90%;
+  padding-left: 5%;
+}
+
+
+
+h1 {
+  color: var(--h1-color);
+}
+
+h2 {
+  color: var(--h2-color);
+}
+
+h3 {
+  color: var(--h3-color);
+}
+
+p {
+  color: var(--text-color);
+}
+
+
+
+@media (min-width: 800px) {
+  #root {
+    gap: 100px;
+  }
+
+
+}
+
+@media (min-width: 1400px) {
+  #root {
+    gap: 200px;
+  }
+
+}

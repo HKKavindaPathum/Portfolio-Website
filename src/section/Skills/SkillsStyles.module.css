@@ -1,0 +1,41 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  
+    span {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  
+    img {
+      width: 20px;
+    }
+  }
+  
+    .skillList {
+      display: flex;
+      justify-content: space-evenly;
+      align-self: center;
+      flex-wrap: wrap;
+      color:var(--text-color);
+      gap: 20px;
+    }
+
+  h3{
+    font-family: Georgia, 'Times New Roman', Times, serif;
+  }
+  
+  hr {
+    width: 80%;
+    height: 1px;
+    border: none;
+    background-color: var(--text-color);
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+
+  

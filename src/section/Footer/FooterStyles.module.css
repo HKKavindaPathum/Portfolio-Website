@@ -1,0 +1,18 @@
+.container {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--background-color);
+}
+
+.container hr {
+  width: 100%;
+  border: 0;
+  border-top: 2px solid var(--footer-text-color);
+  margin: 20px 0;
+}
+
+.container p {
+  font-size: 16px;
+  color: var(--footer-text-color);
+  margin: 0;
+}
