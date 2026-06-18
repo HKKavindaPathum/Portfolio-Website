@@ -58,23 +58,23 @@ export default function ProjectsGrid() {
 
   if (loading) {
     return (
-      <section id="projects" className="py-24 bg-zinc-950 border-t border-zinc-900">
+      <section id="projects" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">My Work</h2>
-            <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">Recent Projects</h3>
+            <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">Recent Projects</h3>
             <div className="w-12 h-1 bg-violet-600 mx-auto mt-4 rounded-full" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="rounded-2xl border border-zinc-900 bg-zinc-905 p-6 space-y-4 animate-pulse">
-                <div className="h-44 rounded-xl bg-zinc-800" />
-                <div className="h-6 w-3/4 rounded bg-zinc-800" />
-                <div className="h-4 w-full rounded bg-zinc-800" />
-                <div className="h-4 w-5/6 rounded bg-zinc-800" />
+              <div key={n} className="rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900 p-6 space-y-4 animate-pulse">
+                <div className="h-44 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-6 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-4 w-5/6 rounded bg-zinc-200 dark:bg-zinc-800" />
                 <div className="flex gap-2 pt-2">
-                  <div className="h-6 w-16 rounded bg-zinc-800" />
-                  <div className="h-6 w-16 rounded bg-zinc-800" />
+                  <div className="h-6 w-16 rounded bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="h-6 w-16 rounded bg-zinc-200 dark:bg-zinc-800" />
                 </div>
               </div>
             ))}
@@ -85,22 +85,22 @@ export default function ProjectsGrid() {
   }
 
   return (
-    <section id="projects" className="py-24 bg-zinc-950 border-t border-zinc-900 relative">
+    <section id="projects" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">My Work</h2>
-          <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">Recent Projects</h3>
+          <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">Recent Projects</h3>
           <div className="w-12 h-1 bg-violet-600 mx-auto mt-4 rounded-full" />
         </div>
 
         {error && (
-          <div className="text-center py-8 text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl max-w-lg mx-auto">
+          <div className="text-center py-8 text-rose-600 dark:text-rose-400 bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/15 dark:border-rose-500/20 rounded-xl max-w-lg mx-auto">
             {error}
           </div>
         )}
 
         {!error && projects.length === 0 && (
-          <div className="text-center py-12 text-zinc-500">
+          <div className="text-center py-12 text-zinc-500 dark:text-zinc-500 italic">
             No projects found. Log into the admin dashboard to add your work!
           </div>
         )}
@@ -114,11 +114,11 @@ export default function ProjectsGrid() {
               return (
                 <div
                   key={project.id}
-                  className="group relative rounded-2xl bg-zinc-900/40 border border-zinc-800 hover:border-zinc-700/80 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-lg shadow-black/20 hover:-translate-y-1"
+                  className="group relative rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700/80 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-md shadow-zinc-200/50 dark:shadow-black/20 hover:-translate-y-1"
                 >
                   <div className="p-6">
                     {/* Project Image/Icon */}
-                    <div className="h-44 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 border border-zinc-800/80 flex items-center justify-center mb-6 overflow-hidden relative">
+                    <div className="h-44 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-center mb-6 overflow-hidden relative">
                       {project.imageUrl ? (
                         <img
                           src={project.imageUrl}
@@ -126,18 +126,18 @@ export default function ProjectsGrid() {
                           className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
-                        <div className="flex flex-col items-center gap-2 text-zinc-500 group-hover:text-violet-400 transition-colors">
+                        <div className="flex flex-col items-center gap-2 text-zinc-400 dark:text-zinc-500 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                           <Code size={40} className="stroke-[1.5]" />
                           <span className="text-xs uppercase tracking-widest font-mono">No Preview</span>
                         </div>
                       )}
                     </div>
 
-                    <h4 className="text-xl font-bold text-white group-hover:text-violet-400 transition-colors mb-2">
+                    <h4 className="text-xl font-bold text-zinc-900 group-hover:text-violet-650 dark:text-white dark:group-hover:text-violet-400 transition-colors mb-2">
                       {project.title}
                     </h4>
 
-                    <p className="text-sm text-zinc-400 leading-relaxed mb-4 line-clamp-3">
+                    <p className="text-sm text-zinc-650 dark:text-zinc-400 leading-relaxed mb-4 line-clamp-3">
                       {project.description}
                     </p>
 
@@ -146,7 +146,7 @@ export default function ProjectsGrid() {
                       {badges.map((badge, bIdx) => (
                         <span
                           key={bIdx}
-                          className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-violet-400 bg-violet-500/10 border border-violet-500/15 rounded-md uppercase"
+                          className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-violet-600 bg-violet-600/10 border border-violet-600/15 dark:text-violet-400 dark:bg-violet-500/10 dark:border-violet-500/15 rounded-md uppercase"
                         >
                           {badge}
                         </span>
@@ -155,13 +155,13 @@ export default function ProjectsGrid() {
                   </div>
 
                   {/* Card Actions */}
-                  <div className="p-6 pt-0 flex gap-4 border-t border-zinc-800/30 mt-auto">
+                  <div className="p-6 pt-0 flex gap-4 border-t border-zinc-200/50 dark:border-zinc-800/30 mt-auto">
                     {project.githubLink && (
                       <a
                         href={project.githubLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
                       >
                         <GithubIcon size={14} />
                         Source
@@ -172,7 +172,7 @@ export default function ProjectsGrid() {
                         href={project.liveLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-white transition-colors ml-auto"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors ml-auto"
                       >
                         <ExternalLink size={14} />
                         Live Demo

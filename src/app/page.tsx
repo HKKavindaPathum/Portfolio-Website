@@ -69,7 +69,7 @@ export default async function Home() {
   const cvUrl = cv?.cvUrl || '#';
 
   return (
-    <div className="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-violet-500 selection:text-white">
+    <div className="bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 min-h-screen font-sans antialiased selection:bg-violet-500 selection:text-white transition-colors duration-300">
       <Navbar />
       
       {/* Sections */}
@@ -79,15 +79,15 @@ export default async function Home() {
       <ProjectsGrid />
 
       {/* Contact Section */}
-      <section id="contact" className="py-24 bg-zinc-950 border-t border-zinc-900 relative">
-        <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
-          <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] rounded-full bg-violet-600/10 blur-[120px]" />
+      <section id="contact" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
+        <div className="absolute inset-0 z-0 opacity-10 dark:opacity-15 pointer-events-none">
+          <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] rounded-full bg-violet-500/5 dark:bg-violet-600/10 blur-[120px]" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">Get In Touch</h2>
-            <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">Let's Connect</h3>
+            <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">Let's Connect</h3>
             <div className="w-12 h-1 bg-violet-600 mx-auto mt-4 rounded-full" />
           </div>
 
@@ -95,63 +95,63 @@ export default async function Home() {
             {/* Contact Details */}
             <div className="lg:col-span-5 space-y-8">
               <div>
-                <h4 className="text-xl font-bold text-white mb-2">Contact Information</h4>
-                <p className="text-sm text-zinc-400 leading-relaxed">
+                <h4 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Contact Information</h4>
+                <p className="text-sm text-zinc-605 dark:text-zinc-400 leading-relaxed">
                   Feel free to reach out for project collaboration, freelance opportunities, or just to say hello. I'll get back to you as soon as possible.
                 </p>
               </div>
 
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-violet-400">
+                  <div className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-violet-600 dark:text-violet-400">
                     <Mail size={18} />
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Email</span>
-                    <a href={`mailto:jane.doe@example.com`} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+                    <a href={`mailto:jane.doe@example.com`} className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
                       jane.doe@example.com
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-violet-400">
+                  <div className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-violet-600 dark:text-violet-400">
                     <Phone size={18} />
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Phone</span>
-                    <a href="tel:+1234567890" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+                    <a href="tel:+1234567890" className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
                       +1 (234) 567-890
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-violet-400">
+                  <div className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-violet-600 dark:text-violet-400">
                     <MapPin size={18} />
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Location</span>
-                    <span className="text-sm font-medium text-zinc-300">San Francisco, California</span>
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">San Francisco, California</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-4 pt-4">
-                <a href="#" className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors">
+                <a href="#" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
                   <GithubIcon size={18} />
                 </a>
-                <a href="#" className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors">
+                <a href="#" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
                   <LinkedinIcon size={18} />
                 </a>
-                <a href="#" className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors">
+                <a href="#" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
                   <TwitterIcon size={18} />
                 </a>
               </div>
             </div>
 
-            {/* Message Form */}
-            <div className="lg:col-span-7 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-8 shadow-lg shadow-black/20">
+            {/* Message Form Wrapper */}
+            <div className="lg:col-span-7 bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-8 shadow-md dark:shadow-lg shadow-zinc-200/50 dark:shadow-black/20">
               <ContactForm />
             </div>
           </div>
@@ -159,10 +159,10 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-zinc-950 border-t border-zinc-900 text-center text-xs text-zinc-500 font-semibold uppercase tracking-wider">
+      <footer className="py-12 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 text-center text-xs text-zinc-600 dark:text-zinc-500 font-semibold uppercase tracking-wider transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4">
           <p>© {new Date().getFullYear()} {fullName}. All rights reserved.</p>
-          <p className="mt-2 text-[10px] text-zinc-600">Built using Next.js, Tailwind CSS, Prisma, and MySQL</p>
+          <p className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-600">Built using Next.js, Tailwind CSS, Prisma, and MySQL</p>
         </div>
       </footer>
     </div>
