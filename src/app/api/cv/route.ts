@@ -16,6 +16,15 @@ export async function GET() {
           professionalTitle: 'Full-Stack Developer & Architect',
           aboutSummary: 'Welcome to my portfolio website! Please run database migrations and seed default content to customize these details.',
           cvUrl: '#',
+          githubUrl: '',
+          linkedinUrl: '',
+          email: '',
+          phone: '',
+          location: '',
+          statsExperience: '5+',
+          statsProjects: '30+',
+          statsTechnologies: '15+',
+          heroDescription: 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
         },
       });
     }
@@ -38,25 +47,55 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { fullName, professionalTitle, aboutSummary, cvUrl } = body;
+    const {
+      fullName,
+      professionalTitle,
+      aboutSummary,
+      cvUrl,
+      githubUrl,
+      linkedinUrl,
+      email,
+      phone,
+      location,
+      statsExperience,
+      statsProjects,
+      statsTechnologies,
+      heroDescription,
+    } = body;
 
     if (!fullName || !professionalTitle || !aboutSummary || !cvUrl) {
       return NextResponse.json(
-        { success: false, error: 'All fields (fullName, professionalTitle, aboutSummary, cvUrl) are required' },
+        { success: false, error: 'fullName, professionalTitle, aboutSummary, and cvUrl are required' },
         { status: 400 }
       );
     }
 
     // Find first record; create if missing, otherwise update.
     let cv = await prisma.cvDetails.findFirst();
+    const payload = {
+      fullName,
+      professionalTitle,
+      aboutSummary,
+      cvUrl,
+      githubUrl: githubUrl || null,
+      linkedinUrl: linkedinUrl || null,
+      email: email || null,
+      phone: phone || null,
+      location: location || null,
+      statsExperience: statsExperience || '5+',
+      statsProjects: statsProjects || '30+',
+      statsTechnologies: statsTechnologies || '15+',
+      heroDescription: heroDescription || 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
+    };
+
     if (!cv) {
       cv = await prisma.cvDetails.create({
-        data: { fullName, professionalTitle, aboutSummary, cvUrl },
+        data: payload,
       });
     } else {
       cv = await prisma.cvDetails.update({
         where: { id: cv.id },
-        data: { fullName, professionalTitle, aboutSummary, cvUrl },
+        data: payload,
       });
     }
 

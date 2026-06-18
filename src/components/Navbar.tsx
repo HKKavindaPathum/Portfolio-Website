@@ -17,6 +17,7 @@ export default function Navbar() {
     // Initial theme set
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     const initialTheme = savedTheme || 'dark';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(initialTheme);
     if (initialTheme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -97,6 +98,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', href: '#home' },
     { name: 'About', href: '#about' },
+    { name: 'Skills', href: '#skills' },
     { name: 'Projects', href: '#projects' },
     { name: 'Contact', href: '#contact' },
   ];
@@ -149,7 +151,7 @@ export default function Navbar() {
               href="#contact"
               className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-950 dark:text-white bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 dark:hover:bg-zinc-800 rounded-full transition-all duration-200 shadow-md"
             >
-              Let's Talk
+              Let&apos;s Talk
             </a>
           </div>
 
@@ -199,7 +201,7 @@ export default function Navbar() {
               onClick={() => setIsOpen(false)}
               className="block w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-md shadow-indigo-600/20"
             >
-              Let's Talk
+              Let&apos;s Talk
             </a>
           </div>
         </div>

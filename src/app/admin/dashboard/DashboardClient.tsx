@@ -2,7 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Briefcase, FileText, Plus, Edit2, Trash2, LogOut, Loader2, Save } from 'lucide-react';
+import {
+  Briefcase,
+  FileText,
+  Plus,
+  Edit2,
+  Trash2,
+  LogOut,
+  Loader2,
+  Save,
+  GraduationCap,
+  Award,
+} from 'lucide-react';
 
 interface Project {
   id: number;
@@ -19,23 +30,68 @@ interface CvDetails {
   professionalTitle: string;
   aboutSummary: string;
   cvUrl: string;
+  githubUrl?: string | null;
+  linkedinUrl?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  statsExperience?: string | null;
+  statsProjects?: string | null;
+  statsTechnologies?: string | null;
+  heroDescription?: string | null;
 }
+
+interface Education {
+  id: number;
+  degree: string;
+  institution: string;
+  period: string;
+  description: string;
+}
+
+interface Skill {
+  id: number;
+  name: string;
+  category: string;
+}
+
+const standardCategories = [
+  'Programming Languages',
+  'Web & UI (Frameworks & Libs)',
+  'Cloud & Databases',
+  'Tools & Technologies',
+];
 
 export default function DashboardClient() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'projects' | 'cv'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'cv' | 'education' | 'skills'>('cv');
+  
+  // Data lists
   const [projects, setProjects] = useState<Project[]>([]);
   const [cvDetails, setCvDetails] = useState<CvDetails>({
     fullName: '',
     professionalTitle: '',
     aboutSummary: '',
     cvUrl: '',
+    githubUrl: '',
+    linkedinUrl: '',
+    email: '',
+    phone: '',
+    location: '',
+    statsExperience: '',
+    statsProjects: '',
+    statsTechnologies: '',
+    heroDescription: '',
   });
+  const [educationList, setEducationList] = useState<Education[]>([]);
+  const [skillsList, setSkillsList] = useState<Skill[]>([]);
 
   // Loading & Action states
   const [loading, setLoading] = useState(true);
   const [savingCv, setSavingCv] = useState(false);
   const [savingProject, setSavingProject] = useState(false);
+  const [savingEducation, setSavingEducation] = useState(false);
+  const [savingSkill, setSavingSkill] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Project Form State
@@ -49,20 +105,46 @@ export default function DashboardClient() {
   });
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
 
+  // Education Form State
+  const [educationForm, setEducationForm] = useState<Partial<Education>>({
+    degree: '',
+    institution: '',
+    period: '',
+    description: '',
+  });
+  const [editingEducationId, setEditingEducationId] = useState<number | null>(null);
+
+  // Skill Form State
+  const [skillForm, setSkillForm] = useState<Partial<Skill>>({
+    name: '',
+    category: standardCategories[0],
+  });
+  const [customCategory, setCustomCategory] = useState('');
+  const [editingSkillId, setEditingSkillId] = useState<number | null>(null);
+
   // Fetch initial dashboard data
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [projRes, cvRes] = await Promise.all([
+        const [projRes, cvRes, eduRes, skillRes] = await Promise.all([
           fetch('/api/projects'),
           fetch('/api/cv'),
+          fetch('/api/education'),
+          fetch('/api/skills'),
         ]);
 
         const projData = await projRes.json();
         const cvData = await cvRes.json();
+        const eduData = await eduRes.json();
+        const skillData = await skillRes.json();
 
         if (projData.success) setProjects(projData.data);
         if (cvData.success) setCvDetails(cvData.data);
+        if (eduData.success) {
+          const sortedEdu = [...eduData.data].sort((a, b) => b.id - a.id);
+          setEducationList(sortedEdu);
+        }
+        if (skillData.success) setSkillsList(skillData.data);
       } catch (err) {
         console.error(err);
         setError('Failed to load dashboard data.');
@@ -83,7 +165,7 @@ export default function DashboardClient() {
     }
   };
 
-  // Manage CV details submission
+  // 1. CV Submit
   const handleCvSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingCv(true);
@@ -104,13 +186,13 @@ export default function DashboardClient() {
       }
     } catch (err) {
       console.error(err);
-      setError('An error occurred while saving.');
+      setError('An error occurred while saving CV.');
     } finally {
       setSavingCv(false);
     }
   };
 
-  // Manage Project creation / modification
+  // 2. Project Submit
   const handleProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProject(true);
@@ -135,7 +217,6 @@ export default function DashboardClient() {
         } else {
           setProjects([data.data, ...projects]);
         }
-        // Reset Project Form
         setProjectForm({
           title: '',
           description: '',
@@ -157,7 +238,6 @@ export default function DashboardClient() {
     }
   };
 
-  // Delete project
   const handleDeleteProject = async (id: number) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
 
@@ -165,7 +245,6 @@ export default function DashboardClient() {
       const res = await fetch(`/api/projects?id=${id}`, {
         method: 'DELETE',
       });
-
       const data = await res.json();
       if (res.ok && data.success) {
         setProjects(projects.filter((p) => p.id !== id));
@@ -188,7 +267,173 @@ export default function DashboardClient() {
       liveLink: project.liveLink || '',
       imageUrl: project.imageUrl || '',
     });
-    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 3. Education Submit
+  const handleEducationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingEducation(true);
+    setError(null);
+
+    const isEdit = editingEducationId !== null;
+    const url = '/api/education';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    try {
+      const payload = isEdit ? { ...educationForm, id: editingEducationId } : educationForm;
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (isEdit) {
+          setEducationList(
+            educationList.map((item) => (item.id === editingEducationId ? data.data : item))
+          );
+        } else {
+          setEducationList([data.data, ...educationList]);
+        }
+        setEducationForm({
+          degree: '',
+          institution: '',
+          period: '',
+          description: '',
+        });
+        setEditingEducationId(null);
+        alert(isEdit ? 'Education entry updated!' : 'Education entry created!');
+      } else {
+        setError(data.error || 'Failed to save education entry');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while saving education.');
+    } finally {
+      setSavingEducation(false);
+    }
+  };
+
+  const handleDeleteEducation = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this education entry?')) return;
+
+    try {
+      const res = await fetch(`/api/education?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEducationList(educationList.filter((item) => item.id !== id));
+      } else {
+        setError(data.error || 'Failed to delete education entry');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while deleting education.');
+    }
+  };
+
+  const startEditEducation = (item: Education) => {
+    setEditingEducationId(item.id);
+    setEducationForm({
+      degree: item.degree,
+      institution: item.institution,
+      period: item.period,
+      description: item.description,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 4. Skills Submit
+  const handleSkillSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSkill(true);
+    setError(null);
+
+    const isEdit = editingSkillId !== null;
+    const url = '/api/skills';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const category =
+      skillForm.category === 'custom' ? customCategory.trim() : skillForm.category;
+
+    if (!category) {
+      setError('Please specify a category name.');
+      setSavingSkill(false);
+      return;
+    }
+
+    try {
+      const payload = isEdit
+        ? { id: editingSkillId, name: skillForm.name, category }
+        : { name: skillForm.name, category };
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (isEdit) {
+          setSkillsList(
+            skillsList.map((item) => (item.id === editingSkillId ? data.data : item))
+          );
+        } else {
+          setSkillsList([...skillsList, data.data]);
+        }
+        setSkillForm({
+          name: '',
+          category: standardCategories[0],
+        });
+        setCustomCategory('');
+        setEditingSkillId(null);
+        alert(isEdit ? 'Skill updated!' : 'Skill created!');
+      } else {
+        setError(data.error || 'Failed to save skill');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while saving skill.');
+    } finally {
+      setSavingSkill(false);
+    }
+  };
+
+  const handleDeleteSkill = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this skill?')) return;
+
+    try {
+      const res = await fetch(`/api/skills?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSkillsList(skillsList.filter((item) => item.id !== id));
+      } else {
+        setError(data.error || 'Failed to delete skill');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while deleting skill.');
+    }
+  };
+
+  const startEditSkill = (item: Skill) => {
+    setEditingSkillId(item.id);
+    const isStandard = standardCategories.includes(item.category);
+    setSkillForm({
+      name: item.name,
+      category: isStandard ? item.category : 'custom',
+    });
+    if (!isStandard) {
+      setCustomCategory(item.category);
+    } else {
+      setCustomCategory('');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -225,8 +470,23 @@ export default function DashboardClient() {
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto p-6 md:p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Navigation Sidebar */}
+        {/* Navigation Sidebar (Manage CV & Profile is now at the top) */}
         <aside className="lg:col-span-1 space-y-2">
+          <button
+            onClick={() => {
+              setActiveTab('cv');
+              setError(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
+              activeTab === 'cv'
+                ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
+                : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
+            }`}
+          >
+            <FileText size={18} />
+            Manage Profile & CV
+          </button>
+
           <button
             onClick={() => {
               setActiveTab('projects');
@@ -241,19 +501,35 @@ export default function DashboardClient() {
             <Briefcase size={18} />
             Manage Projects
           </button>
+
           <button
             onClick={() => {
-              setActiveTab('cv');
+              setActiveTab('education');
               setError(null);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
-              activeTab === 'cv'
+              activeTab === 'education'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
                 : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
             }`}
           >
-            <FileText size={18} />
-            Manage CV & Profile
+            <GraduationCap size={18} />
+            Manage Education
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('skills');
+              setError(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
+              activeTab === 'skills'
+                ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
+                : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
+            }`}
+          >
+            <Award size={18} />
+            Manage Skills
           </button>
         </aside>
 
@@ -265,7 +541,192 @@ export default function DashboardClient() {
             </div>
           )}
 
-          {/* TAB 1: PROJECTS */}
+          {/* TAB 1: CV DETAILS */}
+          {activeTab === 'cv' && (
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                <FileText size={18} />
+                Manage Profile & CV Link
+              </h2>
+
+              <form onSubmit={handleCvSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={cvDetails.fullName}
+                      onChange={(e) => setCvDetails({ ...cvDetails, fullName: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. Jane Doe"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Professional Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={cvDetails.professionalTitle}
+                      onChange={(e) => setCvDetails({ ...cvDetails, professionalTitle: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. Lead Full-Stack Architect"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Hero Section Tagline</label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={cvDetails.heroDescription || ''}
+                    onChange={(e) => setCvDetails({ ...cvDetails, heroDescription: e.target.value })}
+                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none resize-none leading-relaxed"
+                    placeholder="Brief intro tagline displayed under your title in the hero section..."
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Biography Summary</label>
+                  <textarea
+                    required
+                    rows={6}
+                    value={cvDetails.aboutSummary}
+                    onChange={(e) => setCvDetails({ ...cvDetails, aboutSummary: e.target.value })}
+                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none resize-none leading-relaxed"
+                    placeholder="Tell your professional story, core values, philosophy..."
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">CV Document URL (PDF/Drive Link)</label>
+                  <input
+                    type="text"
+                    required
+                    value={cvDetails.cvUrl}
+                    onChange={(e) => setCvDetails({ ...cvDetails, cvUrl: e.target.value })}
+                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                    placeholder="https://example.com/resume.pdf"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">GitHub Profile URL</label>
+                    <input
+                      type="url"
+                      value={cvDetails.githubUrl || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, githubUrl: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">LinkedIn Profile URL</label>
+                    <input
+                      type="url"
+                      value={cvDetails.linkedinUrl || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, linkedinUrl: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="https://linkedin.com/in/..."
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Contact Email</label>
+                    <input
+                      type="email"
+                      value={cvDetails.email || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, email: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. hello@domain.com"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Phone Number</label>
+                    <input
+                      type="text"
+                      value={cvDetails.phone || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, phone: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. +94 740 707 321"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Location</label>
+                    <input
+                      type="text"
+                      value={cvDetails.location || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, location: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. Sri Lanka"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Years of Experience</label>
+                    <input
+                      type="text"
+                      required
+                      value={cvDetails.statsExperience || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, statsExperience: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. 5+"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Projects Completed</label>
+                    <input
+                      type="text"
+                      required
+                      value={cvDetails.statsProjects || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, statsProjects: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. 30+"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Technologies Used</label>
+                    <input
+                      type="text"
+                      required
+                      value={cvDetails.statsTechnologies || ''}
+                      onChange={(e) => setCvDetails({ ...cvDetails, statsTechnologies: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. 15+"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={savingCv}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors"
+                  >
+                    {savingCv ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={14} />
+                        Update Profile
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 2: PROJECTS */}
           {activeTab === 'projects' && (
             <div className="space-y-8">
               {/* Add/Edit project Form */}
@@ -428,84 +889,290 @@ export default function DashboardClient() {
             </div>
           )}
 
-          {/* TAB 2: CV DETAILS */}
-          {activeTab === 'cv' && (
-            <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
-                <FileText size={18} />
-                Manage Profile & CV Link
-              </h2>
+          {/* TAB 3: EDUCATION TIMELINE */}
+          {activeTab === 'education' && (
+            <div className="space-y-8">
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                  {editingEducationId ? <Edit2 size={18} /> : <Plus size={18} />}
+                  {editingEducationId ? 'Modify Education Entry' : 'Add New Education Entry'}
+                </h2>
 
-              <form onSubmit={handleCvSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleEducationSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Degree / Qualification</label>
+                      <input
+                        type="text"
+                        required
+                        value={educationForm.degree || ''}
+                        onChange={(e) => setEducationForm({ ...educationForm, degree: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                        placeholder="e.g. G.C.E. Advanced Level"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Institution / School</label>
+                      <input
+                        type="text"
+                        required
+                        value={educationForm.institution || ''}
+                        onChange={(e) => setEducationForm({ ...educationForm, institution: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                        placeholder="e.g. Eastern University of Sri Lanka"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Period</label>
+                      <input
+                        type="text"
+                        required
+                        value={educationForm.period || ''}
+                        onChange={(e) => setEducationForm({ ...educationForm, period: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                        placeholder="e.g. 2019 or 08/2021 - 12/2024"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Full Name</label>
-                    <input
-                      type="text"
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex justify-between">
+                      <span>Description / Subject Grades</span>
+                      <span className="text-[10px] text-zinc-550 lowercase italic font-normal">Use Enter/Newlines to list vertically</span>
+                    </label>
+                    <textarea
                       required
-                      value={cvDetails.fullName}
-                      onChange={(e) => setCvDetails({ ...cvDetails, fullName: e.target.value })}
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
-                      placeholder="e.g. Jane Doe"
+                      rows={5}
+                      value={educationForm.description || ''}
+                      onChange={(e) => setEducationForm({ ...educationForm, description: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none resize-none leading-relaxed"
+                      placeholder="e.g. Combined Mathematics : C&#10;Physics : S&#10;ICT : C"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Professional Title</label>
-                    <input
-                      type="text"
-                      required
-                      value={cvDetails.professionalTitle}
-                      onChange={(e) => setCvDetails({ ...cvDetails, professionalTitle: e.target.value })}
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
-                      placeholder="e.g. Lead Full-Stack Architect"
-                    />
-                  </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Biography Summary</label>
-                  <textarea
-                    required
-                    rows={6}
-                    value={cvDetails.aboutSummary}
-                    onChange={(e) => setCvDetails({ ...cvDetails, aboutSummary: e.target.value })}
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none resize-none leading-relaxed"
-                    placeholder="Tell your professional story, core values, philosophy..."
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">CV Document URL (PDF/Drive Link)</label>
-                  <input
-                    type="text"
-                    required
-                    value={cvDetails.cvUrl}
-                    onChange={(e) => setCvDetails({ ...cvDetails, cvUrl: e.target.value })}
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
-                    placeholder="https://example.com/resume.pdf"
-                  />
-                </div>
-
-                <div className="flex justify-end pt-2">
-                  <button
-                    type="submit"
-                    disabled={savingCv}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors"
-                  >
-                    {savingCv ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save size={14} />
-                        Update Profile
-                      </>
+                  <div className="flex justify-end gap-3 pt-2">
+                    {editingEducationId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingEducationId(null);
+                          setEducationForm({
+                            degree: '',
+                            institution: '',
+                            period: '',
+                            description: '',
+                          });
+                        }}
+                        className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 rounded-lg transition-colors"
+                      >
+                        Cancel
+                      </button>
                     )}
-                  </button>
-                </div>
-              </form>
+                    <button
+                      type="submit"
+                      disabled={savingEducation}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors"
+                    >
+                      {savingEducation ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={14} />
+                          {editingEducationId ? 'Save Changes' : 'Add Entry'}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Education List */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Timeline ({educationList.length})</h3>
+
+                {educationList.length === 0 ? (
+                  <p className="text-zinc-500 text-sm italic">No entries found. Add one above.</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {educationList.map((item) => (
+                      <div
+                        key={`admin-edu-${item.id}`}
+                        className="flex items-center justify-between p-5 rounded-2xl bg-zinc-900/30 border border-zinc-800/80 hover:border-zinc-800 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <h4 className="font-bold text-white text-lg">{item.degree}</h4>
+                          <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">{item.institution} ({item.period})</p>
+                          <p className="text-xs text-zinc-400 whitespace-pre-line leading-relaxed italic">{item.description}</p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <button
+                            onClick={() => startEditEducation(item)}
+                            className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-violet-400 rounded-lg transition-colors border border-zinc-800"
+                            title="Edit"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEducation(item.id)}
+                            className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-rose-400 rounded-lg transition-colors border border-zinc-800"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: SKILLS & TECHNOLOGIES */}
+          {activeTab === 'skills' && (
+            <div className="space-y-8">
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                  {editingSkillId ? <Edit2 size={18} /> : <Plus size={18} />}
+                  {editingSkillId ? 'Modify Skill badge' : 'Add New Skill Badge'}
+                </h2>
+
+                <form onSubmit={handleSkillSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Skill Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={skillForm.name || ''}
+                        onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                        placeholder="e.g. TypeScript or Docker"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Category</label>
+                      <select
+                        value={skillForm.category || ''}
+                        onChange={(e) => setSkillForm({ ...skillForm, category: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-350 outline-none"
+                      >
+                        {standardCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                        <option value="custom">Other / Custom Category...</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {skillForm.category === 'custom' && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Custom Category Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                        placeholder="e.g. Cloud Security or Mobile Development"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    {editingSkillId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingSkillId(null);
+                          setSkillForm({
+                            name: '',
+                            category: standardCategories[0],
+                          });
+                          setCustomCategory('');
+                        }}
+                        className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 rounded-lg transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={savingSkill}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors"
+                    >
+                      {savingSkill ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={14} />
+                          {editingSkillId ? 'Save Changes' : 'Create Skill'}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Skills List */}
+              <div className="space-y-6">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Skills List ({skillsList.length})</h3>
+
+                {skillsList.length === 0 ? (
+                  <p className="text-zinc-500 text-sm italic">No skills found. Add one above.</p>
+                ) : (
+                  <div className="space-y-6">
+                    {Object.entries(
+                      skillsList.reduce((acc: { [key: string]: Skill[] }, cur) => {
+                        if (!acc[cur.category]) acc[cur.category] = [];
+                        acc[cur.category].push(cur);
+                        return acc;
+                      }, {})
+                    ).map(([category, items]) => (
+                      <div key={category} className="space-y-3 bg-zinc-900/10 border border-zinc-800/40 rounded-2xl p-5">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-violet-400 flex items-center gap-1.5">
+                          <Award size={14} />
+                          {category}
+                        </h4>
+                        <div className="flex flex-wrap gap-2.5">
+                          {items.map((item) => (
+                            <div
+                              key={`admin-skill-${item.id}`}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-sm"
+                            >
+                              <span className="font-semibold text-zinc-200">{item.name}</span>
+                              <div className="flex items-center border-l border-zinc-800 pl-2 ml-1 gap-1">
+                                <button
+                                  onClick={() => startEditSkill(item)}
+                                  className="text-zinc-500 hover:text-violet-400 transition-colors"
+                                  title="Edit"
+                                >
+                                  <Edit2 size={12} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSkill(item.id)}
+                                  className="text-zinc-500 hover:text-rose-450 transition-colors"
+                                  title="Delete"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

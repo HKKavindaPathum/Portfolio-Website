@@ -24,9 +24,32 @@ model Project {
 }
 
 model CvDetails {
-  id                Int    @id @default(autoincrement())
+  id                Int     @id @default(autoincrement())
   fullName          String
   professionalTitle String
-  aboutSummary      String @db.Text
+  aboutSummary      String  @db.Text
   cvUrl             String
+  githubUrl         String?
+  linkedinUrl       String?
+  email             String?
+  phone             String?
+  location          String?
+  statsExperience   String? @default("5+")
+  statsProjects     String? @default("30+")
+  statsTechnologies String? @default("15+")
+  heroDescription   String? @db.Text
+}
+
+model Education {
+  id          Int    @id @default(autoincrement())
+  degree      String
+  institution String
+  period      String
+  description String @db.Text
+}
+
+model Skill {
+  id       Int    @id @default(autoincrement())
+  name     String
+  category String
 }

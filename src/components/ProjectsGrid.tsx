@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ExternalLink, Code } from 'lucide-react';
+import Image from 'next/image';
 
 const GithubIcon = ({ size = 14 }: { size?: number }) => (
   <svg
@@ -124,9 +125,11 @@ export default function ProjectsGrid() {
                       {/* Project Image/Icon */}
                       <div className="h-44 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-center mb-6 overflow-hidden relative">
                         {project.imageUrl ? (
-                          <img
+                          <Image
                             src={project.imageUrl}
                             alt={project.title}
+                            fill
+                            unoptimized
                             className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (

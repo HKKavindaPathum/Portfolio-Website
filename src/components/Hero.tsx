@@ -8,9 +8,10 @@ interface HeroProps {
   fullName: string;
   professionalTitle: string;
   cvUrl: string;
+  heroDescription: string;
 }
 
-export default function Hero({ fullName, professionalTitle, cvUrl }: HeroProps) {
+export default function Hero({ fullName, professionalTitle, cvUrl, heroDescription }: HeroProps) {
   const [showAvatar, setShowAvatar] = useState(false);
 
   // Toggle between real photo and AI avatar every 4 seconds
@@ -42,7 +43,7 @@ export default function Hero({ fullName, professionalTitle, cvUrl }: HeroProps) 
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
-              <span className="block text-zinc-500 dark:text-zinc-400 text-xl sm:text-2xl font-medium mb-2">Hello, I'm</span>
+              <span className="block text-zinc-500 dark:text-zinc-400 text-xl sm:text-2xl font-medium mb-2">Hello, I&apos;m</span>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-500 dark:from-white dark:via-zinc-200 dark:to-zinc-400">
                 {fullName}
               </span>
@@ -51,8 +52,8 @@ export default function Hero({ fullName, professionalTitle, cvUrl }: HeroProps) 
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-zinc-655 dark:text-zinc-400 max-w-xl mx-auto md:mx-0 leading-relaxed">
-              Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let's build something extraordinary together.
+            <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto md:mx-0 leading-relaxed">
+              {heroDescription}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 pt-4">
