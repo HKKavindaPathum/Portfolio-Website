@@ -1,0 +1,32 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model Project {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String  @db.Text
+  techStack   String
+  githubLink  String?
+  liveLink    String?
+  imageUrl    String?
+}
+
+model CvDetails {
+  id                Int    @id @default(autoincrement())
+  fullName          String
+  professionalTitle String
+  aboutSummary      String @db.Text
+  cvUrl             String
+}
