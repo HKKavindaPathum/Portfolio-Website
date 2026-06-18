@@ -3,22 +3,16 @@ import { Building, Calendar } from 'lucide-react';
 export default function EducationTimeline() {
   const educationList = [
     {
-      degree: 'Master of Science in Software Architecture',
-      institution: 'Global Tech University',
-      period: '2022 - 2024',
-      description: 'Specialized in enterprise microservices, cloud-native design, and distributed databases.',
+      degree: 'Bachelor of Computer Science',
+      institution: 'Eastern University of Sri Lanka',
+      period: '08/2021 - 12/2024',
+      description: 'Acquired core competencies in systems architecture, object-oriented programming, database models, algorithms, and computational maths.',
     },
     {
-      degree: 'Bachelor of Science in Computer Science',
-      institution: 'State Engineering Academy',
-      period: '2018 - 2022',
-      description: 'Graduated with First Class Honors. Deep foundation in algorithms, compiler design, and full-stack engineering.',
-    },
-    {
-      degree: 'Advanced High School Diploma in Computer Science',
-      institution: 'Science College',
-      period: '2016 - 2018',
-      description: 'Focused studies in mathematics, physics, and foundational programming paradigms.',
+      degree: 'Full-Stack Web Development (MERN Stack)',
+      institution: 'Skyrek Academy',
+      period: '10 Weeks Training',
+      description: 'Practical project-driven course focusing on client-server applications, responsive web layouts, database integrations, and API testing.',
     },
   ];
 

@@ -108,8 +108,8 @@ export default async function Home() {
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Email</span>
-                    <a href={`mailto:jane.doe@example.com`} className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
-                      jane.doe@example.com
+                    <a href="mailto:hkkpldhananjaya@gmail.com" className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                      hkkpldhananjaya@gmail.com
                     </a>
                   </div>
                 </div>
@@ -120,8 +120,8 @@ export default async function Home() {
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Phone</span>
-                    <a href="tel:+1234567890" className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
-                      +1 (234) 567-890
+                    <a href="tel:+94740707321" className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                      +94 740 707 321
                     </a>
                   </div>
                 </div>
@@ -132,20 +132,17 @@ export default async function Home() {
                   </div>
                   <div>
                     <span className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Location</span>
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">San Francisco, California</span>
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Sri Lanka</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-4 pt-4">
-                <a href="#" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+                <a href="https://github.com/HKKavindaPathum" target="_blank" rel="noopener noreferrer" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-350 dark:hover:border-zinc-700 transition-colors">
                   <GithubIcon size={18} />
                 </a>
-                <a href="#" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+                <a href="https://www.linkedin.com/in/kavindapathum/" target="_blank" rel="noopener noreferrer" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-350 dark:hover:border-zinc-700 transition-colors">
                   <LinkedinIcon size={18} />
-                </a>
-                <a href="#" className="p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
-                  <TwitterIcon size={18} />
                 </a>
               </div>
             </div>
