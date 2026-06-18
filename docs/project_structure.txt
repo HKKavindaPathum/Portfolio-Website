@@ -1,0 +1,33 @@
+Portfolio-Website/
+├── prisma/
+│   ├── schema.prisma   # MySQL Database Schema
+│   └── seed.js         # Initial Database Seeder
+├── public/
+│   └── profile_avatar.png  # Glowing Neon Avatar
+├── src/
+│   ├── app/
+│   │   ├── admin/
+│   │   │   └── dashboard/
+│   │   │       ├── DashboardClient.tsx  # Tab forms
+│   │   │       └── page.tsx             # Server auth wrapper
+│   │   ├── api/
+│   │   │   ├── auth/login/route.ts      # Login and Logout API
+│   │   │   ├── cv/route.ts              # GET / PUT CV details
+│   │   │   └── projects/route.ts        # GET / POST / PUT / DELETE projects
+│   │   ├── backdoor-admin/
+│   │   │   └── page.tsx                 # Hidden login interface
+│   │   ├── layout.tsx                   # Main global layout
+│   │   └── page.tsx                     # Landing page SSR layout
+│   ├── components/
+│   │   ├── About.tsx             # Biography rendering
+│   │   ├── ContactForm.tsx       # Message client form
+│   │   ├── EducationTimeline.tsx # Vertical qualifications journey
+│   │   ├── Hero.tsx              # Glowing landing section
+│   │   ├── Navbar.tsx            # Sticky mobile/desktop header
+│   │   └── ProjectsGrid.tsx      # Dynamic project cards fetcher
+│   ├── lib/
+│   │   ├── auth.ts   # JWT sign and verify helpers
+│   │   └── prisma.ts # Prisma singleton client
+│   └── middleware.ts # Route handling configurations
+├── .env              # Environment config (DATABASE_URL, JWT_SECRET)
+└── tsconfig.json     # TypeScript configurations

@@ -8,10 +8,11 @@ async function main() {
   const adminPassword = 'admin123';
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-  // Seed Admin
   const admin = await prisma.admin.upsert({
     where: { username: adminUsername },
-    update: {},
+    update: {
+      password: hashedPassword,
+    },
     create: {
       username: adminUsername,
       password: hashedPassword,
