@@ -24,7 +24,63 @@ export default function Navbar() {
       document.documentElement.classList.remove('dark');
     }
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Scroll Reveal Intersection Observer
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.05,
+        rootMargin: '0px 0px -40px 0px',
+      }
+    );
+
+    const observeElements = () => {
+      const elements = document.querySelectorAll('.reveal');
+      elements.forEach((el) => observer.observe(el));
+    };
+    observeElements();
+
+    // Watch for dynamically added elements (like projects load) or class updates
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node instanceof HTMLElement) {
+              if (node.classList.contains('reveal')) {
+                observer.observe(node);
+              }
+              node.querySelectorAll('.reveal').forEach((el) => {
+                observer.observe(el);
+              });
+            }
+          });
+        } else if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const target = mutation.target;
+          if (target instanceof HTMLElement && target.classList.contains('reveal')) {
+            observer.observe(target);
+          }
+        }
+      });
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+      mutationObserver.disconnect();
+    };
   }, []);
 
   const toggleTheme = () => {

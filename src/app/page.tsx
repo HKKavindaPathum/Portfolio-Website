@@ -85,7 +85,7 @@ export default async function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">Get In Touch</h2>
             <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">Let's Connect</h3>
             <div className="w-12 h-1 bg-violet-600 mx-auto mt-4 rounded-full" />
@@ -93,7 +93,7 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-5xl mx-auto">
             {/* Contact Details */}
-            <div className="lg:col-span-5 space-y-8">
+            <div className="lg:col-span-5 space-y-8 reveal">
               <div>
                 <h4 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Contact Information</h4>
                 <p className="text-sm text-zinc-605 dark:text-zinc-400 leading-relaxed">
@@ -148,7 +148,10 @@ export default async function Home() {
             </div>
 
             {/* Message Form Wrapper */}
-            <div className="lg:col-span-7 bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-8 shadow-md dark:shadow-lg shadow-zinc-200/50 dark:shadow-black/20">
+            <div
+              style={{ transitionDelay: '150ms' }}
+              className="lg:col-span-7 bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-8 shadow-md dark:shadow-lg shadow-zinc-200/50 dark:shadow-black/20 reveal"
+            >
               <ContactForm />
             </div>
           </div>

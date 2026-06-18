@@ -12,7 +12,7 @@ export default function About({ aboutSummary }: AboutProps) {
   return (
     <section id="about" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-16 reveal">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">About Me</h2>
           <p className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
             My Biography & Philosophy
@@ -22,7 +22,7 @@ export default function About({ aboutSummary }: AboutProps) {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column - Biography */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-6 reveal">
             <h3 className="text-xl sm:text-2xl font-bold text-zinc-800 dark:text-zinc-100">
               Transforming complex engineering challenges into fluid, premium user experiences.
             </h3>
@@ -33,7 +33,7 @@ export default function About({ aboutSummary }: AboutProps) {
           </div>
 
           {/* Right Column - Stats Card Stack */}
-          <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-6">
+          <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-6 reveal">
             {stats.map((stat, idx) => (
               <div
                 key={idx}
