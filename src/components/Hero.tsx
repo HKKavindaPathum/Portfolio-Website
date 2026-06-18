@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Download, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 
@@ -10,6 +11,16 @@ interface HeroProps {
 }
 
 export default function Hero({ fullName, professionalTitle, cvUrl }: HeroProps) {
+  const [showAvatar, setShowAvatar] = useState(false);
+
+  // Toggle between real photo and AI avatar every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowAvatar((prev) => !prev);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section
       id="home"
@@ -40,7 +51,7 @@ export default function Hero({ fullName, professionalTitle, cvUrl }: HeroProps) 
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-zinc-650 dark:text-zinc-400 max-w-xl mx-auto md:mx-0 leading-relaxed">
+            <p className="text-base sm:text-lg text-zinc-655 dark:text-zinc-400 max-w-xl mx-auto md:mx-0 leading-relaxed">
               Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let's build something extraordinary together.
             </p>
 
@@ -49,7 +60,7 @@ export default function Hero({ fullName, professionalTitle, cvUrl }: HeroProps) 
                 href={cvUrl || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold rounded-xl bg-zinc-900 text-white hover:bg-zinc-850 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 transition-colors shadow-lg shadow-black/5 dark:shadow-white/5"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold rounded-xl bg-zinc-900 text-white hover:bg-zinc-855 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 transition-colors shadow-lg shadow-black/5 dark:shadow-white/5"
               >
                 <Download size={16} />
                 Download CV
@@ -64,21 +75,55 @@ export default function Hero({ fullName, professionalTitle, cvUrl }: HeroProps) 
             </div>
           </div>
 
-          {/* Right Column Profile Image */}
+          {/* Right Column Profile Image (with Slide & Swap transition and real rotating border) */}
           <div className="flex justify-center order-1 md:order-2">
-            <div className="relative group">
-              {/* Glow effects */}
-              <div className="absolute -inset-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full blur opacity-25 dark:opacity-35 group-hover:opacity-50 dark:group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center group overflow-hidden rounded-full">
+              {/* Behind-the-scene ambient glow (blurred) */}
+              <div className="absolute -inset-2.5 bg-gradient-to-r from-violet-600 via-indigo-650 to-violet-600 rounded-full blur opacity-25 dark:opacity-35 animate-spin-slow"></div>
               
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-full overflow-hidden border-4 border-white dark:border-zinc-900 bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center shadow-lg dark:shadow-none">
-                <Image
-                  src="/profile_avatar.png"
-                  alt={fullName}
-                  fill
-                  sizes="(max-width: 640px) 256px, 320px"
-                  priority
-                  className="object-cover transform group-hover:scale-105 transition-transform duration-500"
-                />
+              {/* 1. Spinning border ring (Black & White Conic Gradient for high visibility) */}
+              <div 
+                className="absolute inset-0 rounded-full animate-spin-slow"
+                style={{
+                  background: 'conic-gradient(#000000 90deg, #ffffff 90deg 180deg, #000000 180deg 270deg, #ffffff 270deg)'
+                }}
+              ></div>
+              
+              {/* 2. Slide & Swap Inner container (creates a 4px border by inset-[4px]) */}
+              <div className="absolute inset-[4px] rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+                
+                {/* Slide 1: Real Photo */}
+                <div 
+                  className={`absolute inset-0 w-full h-full rounded-full overflow-hidden transition-all duration-1000 ease-in-out ${
+                    showAvatar ? '-translate-x-full opacity-0' : 'translate-x-0 opacity-100'
+                  }`}
+                >
+                  <Image
+                    src="/real_photo.jpg"
+                    alt={fullName}
+                    fill
+                    sizes="(max-width: 640px) 256px, 320px"
+                    priority
+                    className="object-cover"
+                  />
+                </div>
+
+                {/* Slide 2: AI Stylized Avatar */}
+                <div 
+                  className={`absolute inset-0 w-full h-full rounded-full overflow-hidden transition-all duration-1000 ease-in-out ${
+                    showAvatar ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+                  }`}
+                >
+                  <Image
+                    src="/profile_avatar.png"
+                    alt={`${fullName} Avatar`}
+                    fill
+                    sizes="(max-width: 640px) 256px, 320px"
+                    priority
+                    className="object-cover"
+                  />
+                </div>
+
               </div>
             </div>
           </div>
