@@ -63,7 +63,7 @@ export default async function Home() {
   const heroDescription = cv?.heroDescription || "Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let's build something extraordinary together.";
 
   return (
-    <div className="bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 min-h-screen font-sans antialiased selection:bg-violet-500 selection:text-white transition-colors duration-300">
+    <div className="bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 min-h-screen font-sans antialiased selection:bg-violet-500 selection:text-white transition-colors duration-300 w-full overflow-x-hidden">
       <Navbar />
       
       {/* Sections */}
