@@ -25,6 +25,7 @@ export async function GET() {
           statsProjects: '30+',
           statsTechnologies: '15+',
           heroDescription: 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
+          cvFile: null,
         },
       });
     }
@@ -61,6 +62,7 @@ export async function PUT(request: Request) {
       statsProjects,
       statsTechnologies,
       heroDescription,
+      cvFile,
     } = body;
 
     if (!fullName || !professionalTitle || !aboutSummary || !cvUrl) {
@@ -86,6 +88,7 @@ export async function PUT(request: Request) {
       statsProjects: statsProjects || '30+',
       statsTechnologies: statsTechnologies || '15+',
       heroDescription: heroDescription || 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
+      cvFile: cvFile || null,
     };
 
     if (!cv) {

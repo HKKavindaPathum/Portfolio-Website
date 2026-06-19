@@ -22,6 +22,19 @@ async function main() {
   });
   console.log('Admin user seeded:', admin.username);
 
+  const fs = require('fs');
+  const path = require('path');
+
+  let base64Cv = null;
+  try {
+    const cvFilePath = path.join(__dirname, '../public/cv.pdf');
+    if (fs.existsSync(cvFilePath)) {
+      base64Cv = fs.readFileSync(cvFilePath).toString('base64');
+    }
+  } catch (err) {
+    console.warn('Could not read default cv.pdf for seeding:', err.message);
+  }
+
   // Seed CV details
   const defaultCvData = {
     fullName: 'H.K.K.P.L. Dhananjaya',
@@ -37,6 +50,7 @@ async function main() {
     statsProjects: '20+',
     statsTechnologies: '20+',
     heroDescription: 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
+    cvFile: base64Cv,
   };
 
   const existingCv = await prisma.cvDetails.findFirst();

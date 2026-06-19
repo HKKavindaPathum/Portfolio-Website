@@ -38,6 +38,7 @@ model CvDetails {
   statsProjects     String? @default("30+")
   statsTechnologies String? @default("15+")
   heroDescription   String? @db.Text
+  cvFile            String? @db.LongText
 }
 
 model Education {

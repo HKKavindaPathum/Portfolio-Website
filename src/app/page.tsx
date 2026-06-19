@@ -51,7 +51,7 @@ export default async function Home() {
   const fullName = cv?.fullName || 'Jane Doe';
   const professionalTitle = cv?.professionalTitle || 'Full-Stack Developer & Architect';
   const aboutSummary = cv?.aboutSummary || 'Welcome to my portfolio! Log in to the admin panel to update this profile detail.';
-  const cvUrl = cv?.cvUrl || '#';
+  const cvUrl = cv?.cvFile ? '/api/cv/download' : (cv?.cvUrl && cv.cvUrl !== '#' ? cv.cvUrl : '/api/cv/download');
   const githubUrl = cv?.githubUrl || '';
   const linkedinUrl = cv?.linkedinUrl || '';
   const email = cv?.email || '';

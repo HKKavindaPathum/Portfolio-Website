@@ -39,6 +39,7 @@ interface CvDetails {
   statsProjects?: string | null;
   statsTechnologies?: string | null;
   heroDescription?: string | null;
+  cvFile?: string | null;
 }
 
 interface Education {
@@ -82,6 +83,7 @@ export default function DashboardClient() {
     statsProjects: '',
     statsTechnologies: '',
     heroDescription: '',
+    cvFile: '',
   });
   const [educationList, setEducationList] = useState<Education[]>([]);
   const [skillsList, setSkillsList] = useState<Skill[]>([]);
@@ -190,6 +192,35 @@ export default function DashboardClient() {
     } finally {
       setSavingCv(false);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert('Please upload a PDF file only.');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File is too large. Please upload a file smaller than 5MB.');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      const base64Data = base64String.split(',')[1] || base64String;
+      setCvDetails((prev) => ({ ...prev, cvFile: base64Data }));
+    };
+    reader.onerror = (error) => {
+      console.error('Error reading PDF file:', error);
+      alert('Failed to read file.');
+    };
+    reader.readAsDataURL(file);
   };
 
   // 2. Project Submit
@@ -599,16 +630,34 @@ export default function DashboardClient() {
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">CV Document URL (PDF/Drive Link)</label>
-                  <input
-                    type="text"
-                    required
-                    value={cvDetails.cvUrl}
-                    onChange={(e) => setCvDetails({ ...cvDetails, cvUrl: e.target.value })}
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
-                    placeholder="https://example.com/resume.pdf"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">CV Document URL (PDF/Drive Link)</label>
+                    <input
+                      type="text"
+                      required
+                      value={cvDetails.cvUrl}
+                      onChange={(e) => setCvDetails({ ...cvDetails, cvUrl: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="https://example.com/resume.pdf"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Upload CV PDF (Overrides URL)</label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileChange}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-[9px] text-xs text-zinc-400 outline-none file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer"
+                      />
+                      {cvDetails.cvFile && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-emerald-500 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
