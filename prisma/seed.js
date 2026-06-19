@@ -23,45 +23,33 @@ async function main() {
   console.log('Admin user seeded:', admin.username);
 
   // Seed CV details
+  const defaultCvData = {
+    fullName: 'H.K.K.P.L. Dhananjaya',
+    professionalTitle: 'Software Engineer',
+    aboutSummary: 'Driven by a strong passion for software development, I am a dedicated Full-Stack Web Developer with proven experience in developing and successfully deploying reliable web applications. Eager to contribute to a dynamic software engineering team, collaborate on impactful projects, and continuously adapt to new technologies to deliver high-quality solutions.',
+    cvUrl: 'https://www.linkedin.com/in/kavindapathum/',
+    githubUrl: 'https://github.com/HKKavindaPathum',
+    linkedinUrl: 'https://www.linkedin.com/in/kavindapathum/',
+    email: 'hkkpldhananjaya@gmail.com',
+    phone: '+94740707321',
+    location: 'Sri Lanka',
+    statsExperience: '1+',
+    statsProjects: '20+',
+    statsTechnologies: '20+',
+    heroDescription: 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
+  };
+
   const existingCv = await prisma.cvDetails.findFirst();
   if (!existingCv) {
     const cv = await prisma.cvDetails.create({
-      data: {
-        fullName: 'H.K.K.P.L. Dhananjaya',
-        professionalTitle: 'Software Engineer',
-        aboutSummary: 'Driven by a strong passion for software development, I am a dedicated Full-Stack Web Developer with proven experience in developing and successfully deploying reliable web applications. Eager to contribute to a dynamic software engineering team, collaborate on impactful projects, and continuously adapt to new technologies to deliver high-quality solutions.',
-        cvUrl: 'https://www.linkedin.com/in/kavindapathum/',
-        githubUrl: 'https://github.com/HKKavindaPathum',
-        linkedinUrl: 'https://www.linkedin.com/in/kavindapathum/',
-        email: 'hkkpldhananjaya@gmail.com',
-        phone: '+94740707321',
-        location: 'Sri Lanka',
-        statsExperience: '5+',
-        statsProjects: '30+',
-        statsTechnologies: '15+',
-        heroDescription: 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
-      },
+      data: defaultCvData,
     });
     console.log('CV Details seeded:', cv.fullName);
   } else {
     // If it exists, update it to match user's real details
     const cv = await prisma.cvDetails.update({
       where: { id: existingCv.id },
-      data: {
-        fullName: 'H.K.K.P.L. Dhananjaya',
-        professionalTitle: 'Software Engineer',
-        aboutSummary: 'Driven by a strong passion for software development, I am a dedicated Full-Stack Web Developer with proven experience in developing and successfully deploying reliable web applications. Eager to contribute to a dynamic software engineering team, collaborate on impactful projects, and continuously adapt to new technologies to deliver high-quality solutions.',
-        cvUrl: 'https://www.linkedin.com/in/kavindapathum/',
-        githubUrl: 'https://github.com/HKKavindaPathum',
-        linkedinUrl: 'https://www.linkedin.com/in/kavindapathum/',
-        email: 'hkkpldhananjaya@gmail.com',
-        phone: '+94740707321',
-        location: 'Sri Lanka',
-        statsExperience: '5+',
-        statsProjects: '30+',
-        statsTechnologies: '15+',
-        heroDescription: 'Crafting state-of-the-art web applications with clean architecture, elegant user interfaces, and robust backend logic. Let\'s build something extraordinary together.',
-      }
+      data: defaultCvData,
     });
     console.log('CV Details updated:', cv.fullName);
   }
