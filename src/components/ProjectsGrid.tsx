@@ -59,7 +59,7 @@ export default function ProjectsGrid() {
 
   if (loading) {
     return (
-      <section id="projects" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900">
+      <section id="projects" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">My Work</h2>
@@ -86,7 +86,7 @@ export default function ProjectsGrid() {
   }
 
   return (
-    <section id="projects" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
+    <section id="projects" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 reveal">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">My Work</h2>

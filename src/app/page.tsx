@@ -79,7 +79,7 @@ export default async function Home() {
       <ProjectsGrid />
 
       {/* Contact Section */}
-      <section id="contact" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
+      <section id="contact" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300 overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-10 dark:opacity-15 pointer-events-none">
           <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] rounded-full bg-violet-500/5 dark:bg-violet-600/10 blur-[120px]" />
         </div>

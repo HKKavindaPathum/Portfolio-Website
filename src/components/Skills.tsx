@@ -56,7 +56,7 @@ export default function Skills() {
 
   if (loading) {
     return (
-      <section id="skills" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
+      <section id="skills" className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[300px]">
           <Loader2 className="w-8 h-8 animate-spin text-violet-500 mb-2" />
           <span className="text-zinc-500 dark:text-zinc-400 text-sm">Loading skills...</span>
@@ -87,7 +87,7 @@ export default function Skills() {
   return (
     <section
       id="skills"
-      className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300"
+      className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300 overflow-hidden"
     >
       <div className="absolute inset-0 z-0 opacity-10 dark:opacity-15 pointer-events-none">
         <div className="absolute top-[20%] right-[10%] w-[30rem] h-[30rem] rounded-full bg-indigo-500/5 dark:bg-indigo-600/10 blur-[120px]" />

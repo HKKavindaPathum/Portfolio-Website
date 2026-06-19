@@ -41,7 +41,7 @@ export default function EducationTimeline() {
 
   if (loading) {
     return (
-      <section className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
+      <section className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[300px]">
           <Loader2 className="w-8 h-8 animate-spin text-violet-500 mb-2" />
           <span className="text-zinc-500 dark:text-zinc-400 text-sm">Loading timeline...</span>
@@ -51,7 +51,7 @@ export default function EducationTimeline() {
   }
 
   return (
-    <section className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300">
+    <section className="py-24 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900 relative transition-colors duration-300 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 reveal">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-violet-500 mb-2">My Journey</h2>
