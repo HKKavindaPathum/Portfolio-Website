@@ -43,3 +43,6 @@ next-env.d.ts
 # local documentation
 /docs/
 
+# Windows system files
+desktop.ini
+Desktop.ini
