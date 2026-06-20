@@ -6,9 +6,28 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET() {
   try {
     const projects = await prisma.project.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        techStack: true,
+        githubLink: true,
+        liveLink: true,
+        imageUrl: true,
+        imageFile: true,
+      },
       orderBy: { id: 'desc' },
     });
-    return NextResponse.json({ success: true, data: projects });
+
+    const mappedProjects = projects.map((p) => {
+      const { imageFile, ...rest } = p;
+      return {
+        ...rest,
+        imageUrl: imageFile ? `/api/projects/image?id=${p.id}` : p.imageUrl,
+      };
+    });
+
+    return NextResponse.json({ success: true, data: mappedProjects });
   } catch (error) {
     console.error('Fetch projects error:', error);
     return NextResponse.json(
@@ -27,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, description, techStack, githubLink, liveLink, imageUrl } = body;
+    const { title, description, techStack, githubLink, liveLink, imageUrl, imageFile } = body;
 
     if (!title || !description || !techStack) {
       return NextResponse.json(
@@ -44,6 +63,7 @@ export async function POST(request: Request) {
         githubLink: githubLink || null,
         liveLink: liveLink || null,
         imageUrl: imageUrl || null,
+        imageFile: imageFile || null,
       },
     });
 
@@ -66,7 +86,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { id, title, description, techStack, githubLink, liveLink, imageUrl } = body;
+    const { id, title, description, techStack, githubLink, liveLink, imageUrl, imageFile } = body;
 
     if (!id || !title || !description || !techStack) {
       return NextResponse.json(
@@ -75,16 +95,24 @@ export async function PUT(request: Request) {
       );
     }
 
+    const updateData: any = {
+      title,
+      description,
+      techStack,
+      githubLink: githubLink || null,
+      liveLink: liveLink || null,
+    };
+
+    if (body.hasOwnProperty('imageUrl')) {
+      updateData.imageUrl = imageUrl || null;
+    }
+    if (body.hasOwnProperty('imageFile')) {
+      updateData.imageFile = imageFile || null;
+    }
+
     const project = await prisma.project.update({
       where: { id: Number(id) },
-      data: {
-        title,
-        description,
-        techStack,
-        githubLink: githubLink || null,
-        liveLink: liveLink || null,
-        imageUrl: imageUrl || null,
-      },
+      data: updateData,
     });
 
     return NextResponse.json({ success: true, data: project });

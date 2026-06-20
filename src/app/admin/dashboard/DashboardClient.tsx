@@ -23,6 +23,7 @@ interface Project {
   githubLink?: string | null;
   liveLink?: string | null;
   imageUrl?: string | null;
+  imageFile?: string | null;
 }
 
 interface CvDetails {
@@ -104,6 +105,7 @@ export default function DashboardClient() {
     githubLink: '',
     liveLink: '',
     imageUrl: '',
+    imageFile: '',
   });
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
 
@@ -223,6 +225,63 @@ export default function DashboardClient() {
     reader.readAsDataURL(file);
   };
 
+  const handleProjectImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file only.');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          setProjectForm((prev) => ({ ...prev, imageFile: dataUrl }));
+        } else {
+          alert('Failed to process image.');
+        }
+      };
+      img.onerror = () => {
+        alert('Failed to load image file.');
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = (error) => {
+      console.error('Error reading image file:', error);
+      alert('Failed to read file.');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   // 2. Project Submit
   const handleProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,7 +293,21 @@ export default function DashboardClient() {
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
-      const payload = isEdit ? { ...projectForm, id: editingProjectId } : projectForm;
+      const payload: any = isEdit ? { ...projectForm, id: editingProjectId } : { ...projectForm };
+
+      // Handle image updates selectively
+      if (isEdit) {
+        if (payload.imageFile === undefined || payload.imageFile?.startsWith('/api/projects/image')) {
+          delete payload.imageFile;
+        } else if (!payload.imageFile) {
+          payload.imageFile = null;
+        }
+      } else {
+        if (!payload.imageFile) {
+          payload.imageFile = null;
+        }
+      }
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -255,6 +328,7 @@ export default function DashboardClient() {
           githubLink: '',
           liveLink: '',
           imageUrl: '',
+          imageFile: '',
         });
         setEditingProjectId(null);
         alert(isEdit ? 'Project updated!' : 'Project created!');
@@ -290,13 +364,15 @@ export default function DashboardClient() {
 
   const startEditProject = (project: Project) => {
     setEditingProjectId(project.id);
+    const isDbImage = project.imageUrl?.startsWith('/api/projects/image');
     setProjectForm({
       title: project.title,
       description: project.description,
       techStack: project.techStack,
       githubLink: project.githubLink || '',
       liveLink: project.liveLink || '',
-      imageUrl: project.imageUrl || '',
+      imageUrl: isDbImage ? '' : (project.imageUrl || ''),
+      imageFile: isDbImage ? project.imageUrl : undefined,
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -845,14 +921,50 @@ export default function DashboardClient() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Image Preview URL</label>
-                      <input
-                        type="text"
-                        value={projectForm.imageUrl || ''}
-                        onChange={(e) => setProjectForm({ ...projectForm, imageUrl: e.target.value })}
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
-                        placeholder="https://example.com/screenshot.jpg"
-                      />
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Project Image</label>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <label className="flex items-center justify-center px-4 py-2.5 border border-zinc-800 rounded-lg text-xs font-semibold text-zinc-300 bg-zinc-900 hover:bg-zinc-850 cursor-pointer transition-colors focus-within:ring-1 focus-within:ring-violet-500">
+                            <span>Upload Image</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleProjectImageUpload}
+                              className="sr-only"
+                            />
+                          </label>
+                          {projectForm.imageFile && (
+                            <button
+                              type="button"
+                              onClick={() => setProjectForm({ ...projectForm, imageFile: '' })}
+                              className="text-xs text-rose-500 hover:text-rose-400 underline font-medium"
+                            >
+                              Remove Image
+                            </button>
+                          )}
+                        </div>
+                        {projectForm.imageFile && (
+                          <div className="relative w-24 h-16 rounded border border-zinc-800 overflow-hidden bg-zinc-950">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={projectForm.imageFile}
+                              alt="Upload preview"
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        )}
+                        {!projectForm.imageFile && (
+                          <div>
+                            <input
+                              type="text"
+                              value={projectForm.imageUrl || ''}
+                              onChange={(e) => setProjectForm({ ...projectForm, imageUrl: e.target.value })}
+                              className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-xs text-zinc-200 outline-none"
+                              placeholder="Or enter image URL: https://example.com/image.jpg"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -869,6 +981,7 @@ export default function DashboardClient() {
                             githubLink: '',
                             liveLink: '',
                             imageUrl: '',
+                            imageFile: '',
                           });
                         }}
                         className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 rounded-lg transition-colors"
