@@ -6,6 +6,7 @@ import Skills from '@/components/Skills';
 import EducationTimeline from '@/components/EducationTimeline';
 import ProjectsGrid from '@/components/ProjectsGrid';
 import ContactForm from '@/components/ContactForm';
+import Footer from '@/components/Footer';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 const GithubIcon = ({ size = 18 }: { size?: number }) => (
@@ -74,8 +75,8 @@ export default async function Home() {
         statsProjects={statsProjects}
         statsTechnologies={statsTechnologies}
       />
-      <Skills />
       <EducationTimeline />
+      <Skills />
       <ProjectsGrid />
 
       {/* Contact Section */}
@@ -163,12 +164,13 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 text-center text-xs text-zinc-600 dark:text-zinc-500 font-semibold uppercase tracking-wider transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4">
-          <p>© {new Date().getFullYear()} {fullName}. All rights reserved.</p>
-          <p className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-600">Built using Next.js, Tailwind CSS, Prisma, and MySQL</p>
-        </div>
-      </footer>
+      <Footer
+        fullName={fullName}
+        professionalTitle={professionalTitle}
+        cvUrl={cvUrl}
+        githubUrl={githubUrl}
+        linkedinUrl={linkedinUrl}
+      />
     </div>
   );
 }
