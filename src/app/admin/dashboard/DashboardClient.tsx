@@ -14,6 +14,8 @@ import {
   Save,
   GraduationCap,
   Award,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 
 interface Project {
@@ -26,6 +28,7 @@ interface Project {
   liveLink?: string | null;
   imageUrl?: string | null;
   imageFile?: string | null;
+  order?: number;
 }
 
 interface CvDetails {
@@ -56,15 +59,16 @@ interface Education {
 interface Skill {
   id: number;
   name: string;
+  categoryId?: number;
   category: string;
+  order?: number;
 }
 
-const standardCategories = [
-  'Programming Languages',
-  'Web & UI (Frameworks & Libs)',
-  'Cloud & Databases',
-  'Tools & Technologies',
-];
+interface SkillCategory {
+  id: number;
+  name: string;
+  order: number;
+}
 
 export default function DashboardClient() {
   const router = useRouter();
@@ -90,6 +94,7 @@ export default function DashboardClient() {
   });
   const [educationList, setEducationList] = useState<Education[]>([]);
   const [skillsList, setSkillsList] = useState<Skill[]>([]);
+  const [categoriesList, setCategoriesList] = useState<SkillCategory[]>([]);
 
   // Loading & Action states
   const [loading, setLoading] = useState(true);
@@ -97,6 +102,7 @@ export default function DashboardClient() {
   const [savingProject, setSavingProject] = useState(false);
   const [savingEducation, setSavingEducation] = useState(false);
   const [savingSkill, setSavingSkill] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Project Form State
@@ -124,26 +130,31 @@ export default function DashboardClient() {
   // Skill Form State
   const [skillForm, setSkillForm] = useState<Partial<Skill>>({
     name: '',
-    category: standardCategories[0],
+    categoryId: undefined,
   });
-  const [customCategory, setCustomCategory] = useState('');
   const [editingSkillId, setEditingSkillId] = useState<number | null>(null);
+
+  // Category Form State
+  const [categoryForm, setCategoryForm] = useState<{ name: string }>({ name: '' });
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
 
   // Fetch initial dashboard data
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [projRes, cvRes, eduRes, skillRes] = await Promise.all([
+        const [projRes, cvRes, eduRes, skillRes, catRes] = await Promise.all([
           fetch('/api/projects'),
           fetch('/api/cv'),
           fetch('/api/education'),
           fetch('/api/skills'),
+          fetch('/api/skills/categories'),
         ]);
 
         const projData = await projRes.json();
         const cvData = await cvRes.json();
         const eduData = await eduRes.json();
         const skillData = await skillRes.json();
+        const catData = await catRes.json();
 
         if (projData.success) setProjects(projData.data);
         if (cvData.success) setCvDetails(cvData.data);
@@ -152,6 +163,7 @@ export default function DashboardClient() {
           setEducationList(sortedEdu);
         }
         if (skillData.success) setSkillsList(skillData.data);
+        if (catData.success) setCategoriesList(catData.data);
       } catch (err) {
         console.error(err);
         setError('Failed to load dashboard data.');
@@ -468,19 +480,18 @@ export default function DashboardClient() {
     const url = '/api/skills';
     const method = isEdit ? 'PUT' : 'POST';
 
-    const category =
-      skillForm.category === 'custom' ? customCategory.trim() : skillForm.category;
+    const categoryId = skillForm.categoryId;
 
-    if (!category) {
-      setError('Please specify a category name.');
+    if (!categoryId) {
+      toast.error('Please select a category.');
       setSavingSkill(false);
       return;
     }
 
     try {
       const payload = isEdit
-        ? { id: editingSkillId, name: skillForm.name, category }
-        : { name: skillForm.name, category };
+        ? { id: editingSkillId, name: skillForm.name, categoryId }
+        : { name: skillForm.name, categoryId };
 
       const res = await fetch(url, {
         method,
@@ -499,17 +510,16 @@ export default function DashboardClient() {
         }
         setSkillForm({
           name: '',
-          category: standardCategories[0],
+          categoryId: categoriesList[0]?.id || undefined,
         });
-        setCustomCategory('');
         setEditingSkillId(null);
         toast.success(isEdit ? 'Skill updated successfully!' : 'Skill created successfully!');
       } else {
-        setError(data.error || 'Failed to save skill');
+        toast.error(data.error || 'Failed to save skill');
       }
     } catch (err) {
       console.error(err);
-      setError('An error occurred while saving skill.');
+      toast.error('An error occurred while saving skill.');
     } finally {
       setSavingSkill(false);
     }
@@ -525,28 +535,208 @@ export default function DashboardClient() {
       const data = await res.json();
       if (res.ok && data.success) {
         setSkillsList(skillsList.filter((item) => item.id !== id));
+        toast.success('Skill deleted successfully');
       } else {
-        setError(data.error || 'Failed to delete skill');
+        toast.error(data.error || 'Failed to delete skill');
       }
     } catch (err) {
       console.error(err);
-      setError('An error occurred while deleting skill.');
+      toast.error('An error occurred while deleting skill.');
     }
   };
 
   const startEditSkill = (item: Skill) => {
     setEditingSkillId(item.id);
-    const isStandard = standardCategories.includes(item.category);
     setSkillForm({
       name: item.name,
-      category: isStandard ? item.category : 'custom',
+      categoryId: item.categoryId,
     });
-    if (!isStandard) {
-      setCustomCategory(item.category);
-    } else {
-      setCustomCategory('');
-    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 5. Category CRUD Handlers
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCategory(true);
+    setError(null);
+
+    const isEdit = editingCategoryId !== null;
+    const url = '/api/skills/categories';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    try {
+      const payload = isEdit
+        ? { id: editingCategoryId, name: categoryForm.name }
+        : { name: categoryForm.name };
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (isEdit) {
+          setCategoriesList(
+            categoriesList.map((item) => (item.id === editingCategoryId ? data.data : item))
+          );
+          setSkillsList(
+            skillsList.map((skill) =>
+              skill.categoryId === editingCategoryId
+                ? { ...skill, category: data.data.name }
+                : skill
+            )
+          );
+        } else {
+          setCategoriesList([...categoriesList, data.data]);
+        }
+        setCategoryForm({ name: '' });
+        setEditingCategoryId(null);
+        toast.success(isEdit ? 'Category updated successfully!' : 'Category created successfully!');
+      } else {
+        toast.error(data.error || 'Failed to save category');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while saving category.');
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: number) => {
+    const hasSkills = skillsList.some((s) => s.categoryId === id);
+    if (hasSkills) {
+      toast.error('Cannot delete category while it has skills. Remove all skills first.');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to delete this category?')) return;
+
+    try {
+      const res = await fetch(`/api/skills/categories?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCategoriesList(categoriesList.filter((item) => item.id !== id));
+        toast.success('Category deleted successfully');
+      } else {
+        toast.error(data.error || 'Failed to delete category');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while deleting category.');
+    }
+  };
+
+  const startEditCategory = (item: SkillCategory) => {
+    setEditingCategoryId(item.id);
+    setCategoryForm({ name: item.name });
+  };
+
+  // 6. Reordering Handlers
+  const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
+    const nextIndex = direction === 'up' ? index - 1 : index + 1;
+    if (nextIndex < 0 || nextIndex >= categoriesList.length) return;
+
+    const newList = [...categoriesList];
+    const temp = newList[index];
+    newList[index] = newList[nextIndex];
+    newList[nextIndex] = temp;
+
+    setCategoriesList(newList);
+
+    try {
+      const res = await fetch('/api/skills/categories', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          ids: newList.map((c) => c.id),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Failed to save category order');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while reordering categories');
+    }
+  };
+
+  const handleMoveSkill = async (skillId: number, categoryId: number, direction: 'up' | 'down') => {
+    const categorySkills = skillsList.filter((s) => s.categoryId === categoryId);
+    const index = categorySkills.findIndex((s) => s.id === skillId);
+    const nextIndex = direction === 'up' ? index - 1 : index + 1;
+    if (nextIndex < 0 || nextIndex >= categorySkills.length) return;
+
+    const swappedSkills = [...categorySkills];
+    const temp = swappedSkills[index];
+    swappedSkills[index] = swappedSkills[nextIndex];
+    swappedSkills[nextIndex] = temp;
+
+    const newList = [];
+    let swappedIndex = 0;
+    for (const skill of skillsList) {
+      if (skill.categoryId === categoryId) {
+        newList.push(swappedSkills[swappedIndex++]);
+      } else {
+        newList.push(skill);
+      }
+    }
+
+    setSkillsList(newList);
+
+    try {
+      const res = await fetch('/api/skills', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          ids: newList.map((s) => s.id),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Failed to save skills order');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while reordering skills');
+    }
+  };
+
+  const handleMoveProject = async (index: number, direction: 'up' | 'down') => {
+    const nextIndex = direction === 'up' ? index - 1 : index + 1;
+    if (nextIndex < 0 || nextIndex >= projects.length) return;
+
+    const newList = [...projects];
+    const temp = newList[index];
+    newList[index] = newList[nextIndex];
+    newList[nextIndex] = temp;
+
+    setProjects(newList);
+
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          ids: newList.map((p) => p.id),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Failed to save projects order');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while reordering projects');
+    }
   };
 
   if (loading) {
@@ -602,7 +792,7 @@ export default function DashboardClient() {
 
           <button
             onClick={() => {
-              setActiveTab('projects');
+              setActiveTab('education');
               setError(null);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
@@ -612,21 +802,6 @@ export default function DashboardClient() {
             }`}
           >
             <Briefcase size={18} />
-            Manage Projects
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('education');
-              setError(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
-              activeTab === 'education'
-                ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
-                : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
-            }`}
-          >
-            <GraduationCap size={18} />
             Manage Education
           </button>
 
@@ -636,13 +811,28 @@ export default function DashboardClient() {
               setError(null);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
+              activeTab === 'education'
+                ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
+                : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
+            }`}
+          >
+            <GraduationCap size={18} />
+            Manage Skills
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('projects');
+              setError(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
               activeTab === 'skills'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
                 : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
             }`}
           >
             <Award size={18} />
-            Manage Skills
+            Manage Projects
           </button>
         </aside>
 
@@ -1035,7 +1225,7 @@ export default function DashboardClient() {
                   <p className="text-zinc-500 text-sm italic">No projects found. Add one above.</p>
                 ) : (
                   <div className="grid grid-cols-1 gap-4">
-                    {projects.map((project) => (
+                    {projects.map((project, index) => (
                       <div
                         key={project.id}
                         className="flex items-center justify-between p-5 rounded-2xl bg-zinc-900/30 border border-zinc-800/80 hover:border-zinc-800 transition-colors"
@@ -1046,6 +1236,22 @@ export default function DashboardClient() {
                         </div>
                         <div className="flex items-center gap-2">
                           <button
+                            onClick={() => handleMoveProject(index, 'up')}
+                            disabled={index === 0}
+                            className={`p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-violet-400 rounded-lg transition-colors border border-zinc-800 ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            title="Move Up"
+                          >
+                            <ArrowUp size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleMoveProject(index, 'down')}
+                            disabled={index === projects.length - 1}
+                            className={`p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-violet-400 rounded-lg transition-colors border border-zinc-800 ${index === projects.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            title="Move Down"
+                          >
+                            <ArrowDown size={16} />
+                          </button>
+                          <button
                             onClick={() => startEditProject(project)}
                             className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-violet-400 rounded-lg transition-colors border border-zinc-800"
                             title="Edit"
@@ -1054,7 +1260,7 @@ export default function DashboardClient() {
                           </button>
                           <button
                             onClick={() => handleDeleteProject(project.id)}
-                            className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-rose-400 rounded-lg transition-colors border border-zinc-800"
+                            className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-rose-450 rounded-lg transition-colors border border-zinc-800"
                             title="Delete"
                           >
                             <Trash2 size={16} />
@@ -1212,146 +1418,292 @@ export default function DashboardClient() {
 
           {/* TAB 4: SKILLS & TECHNOLOGIES */}
           {activeTab === 'skills' && (
-            <div className="space-y-8">
-              <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
-                  {editingSkillId ? <Edit2 size={18} /> : <Plus size={18} />}
-                  {editingSkillId ? 'Modify Skill badge' : 'Add New Skill Badge'}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              {/* Skill Categories Section */}
+              <div className="lg:col-span-5 bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 space-y-6">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Award size={18} />
+                  {editingCategoryId ? 'Modify Category' : 'Add New Category'}
                 </h2>
-
-                <form onSubmit={handleSkillSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Skill Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={skillForm.name || ''}
-                        onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })}
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
-                        placeholder="e.g. TypeScript or Docker"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Category</label>
-                      <select
-                        value={skillForm.category || ''}
-                        onChange={(e) => setSkillForm({ ...skillForm, category: e.target.value })}
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-350 outline-none"
-                      >
-                        {standardCategories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                        <option value="custom">Other / Custom Category...</option>
-                      </select>
-                    </div>
+                
+                <form onSubmit={handleCategorySubmit} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Category Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={categoryForm.name}
+                      onChange={(e) => setCategoryForm({ name: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                      placeholder="e.g. Programming Languages"
+                    />
                   </div>
-
-                  {skillForm.category === 'custom' && (
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Custom Category Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={customCategory}
-                        onChange={(e) => setCustomCategory(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
-                        placeholder="e.g. Cloud Security or Mobile Development"
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex justify-end gap-3 pt-2">
-                    {editingSkillId && (
+                  
+                  <div className="flex justify-end gap-2">
+                    {editingCategoryId && (
                       <button
                         type="button"
                         onClick={() => {
-                          setEditingSkillId(null);
-                          setSkillForm({
-                            name: '',
-                            category: standardCategories[0],
-                          });
-                          setCustomCategory('');
+                          setEditingCategoryId(null);
+                          setCategoryForm({ name: '' });
                         }}
-                        className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 rounded-lg transition-colors"
+                        className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 rounded-lg transition-colors"
                       >
                         Cancel
                       </button>
                     )}
                     <button
                       type="submit"
-                      disabled={savingSkill}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors"
+                      disabled={savingCategory}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors"
                     >
-                      {savingSkill ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save size={14} />
-                          {editingSkillId ? 'Save Changes' : 'Create Skill'}
-                        </>
-                      )}
+                      {savingCategory ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save size={12} />}
+                      {editingCategoryId ? 'Save' : 'Add'}
                     </button>
                   </div>
                 </form>
-              </div>
-
-              {/* Skills List */}
-              <div className="space-y-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Skills List ({skillsList.length})</h3>
-
-                {skillsList.length === 0 ? (
-                  <p className="text-zinc-500 text-sm italic">No skills found. Add one above.</p>
-                ) : (
-                  <div className="space-y-6">
-                    {Object.entries(
-                      skillsList.reduce((acc: { [key: string]: Skill[] }, cur) => {
-                        if (!acc[cur.category]) acc[cur.category] = [];
-                        acc[cur.category].push(cur);
-                        return acc;
-                      }, {})
-                    ).map(([category, items]) => (
-                      <div key={category} className="space-y-3 bg-zinc-900/10 border border-zinc-800/40 rounded-2xl p-5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-violet-400 flex items-center gap-1.5">
-                          <Award size={14} />
-                          {category}
-                        </h4>
-                        <div className="flex flex-wrap gap-2.5">
-                          {items.map((item) => (
-                            <div
-                              key={`admin-skill-${item.id}`}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-sm"
+                
+                <div className="w-full h-px bg-zinc-800" />
+                
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Existing Categories ({categoriesList.length})</h3>
+                  {categoriesList.length === 0 ? (
+                    <p className="text-zinc-650 text-xs italic">No categories created yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {categoriesList.map((cat, idx) => (
+                        <div
+                          key={`admin-cat-${cat.id}`}
+                          className="flex items-center justify-between p-3.5 bg-zinc-950/40 border border-zinc-850 rounded-xl text-sm"
+                        >
+                          <span className="font-semibold text-zinc-300">{cat.name}</span>
+                          <div className="flex items-center gap-1.5 ml-2">
+                            <button
+                              onClick={() => handleMoveCategory(idx, 'up')}
+                              disabled={idx === 0}
+                              className={`p-1 bg-zinc-900 text-zinc-500 hover:text-violet-400 rounded transition-colors ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                              title="Move Up"
                             >
-                              <span className="font-semibold text-zinc-200">{item.name}</span>
-                              <div className="flex items-center border-l border-zinc-800 pl-2 ml-1 gap-1">
-                                <button
-                                  onClick={() => startEditSkill(item)}
-                                  className="text-zinc-500 hover:text-violet-400 transition-colors"
-                                  title="Edit"
-                                >
-                                  <Edit2 size={12} />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteSkill(item.id)}
-                                  className="text-zinc-500 hover:text-rose-450 transition-colors"
-                                  title="Delete"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
+                              <ArrowUp size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleMoveCategory(idx, 'down')}
+                              disabled={idx === categoriesList.length - 1}
+                              className={`p-1 bg-zinc-900 text-zinc-500 hover:text-violet-400 rounded transition-colors ${idx === categoriesList.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                              title="Move Down"
+                            >
+                              <ArrowDown size={14} />
+                            </button>
+                            <button
+                              onClick={() => startEditCategory(cat)}
+                              className="p-1 bg-zinc-900 text-zinc-500 hover:text-violet-400 transition-colors rounded"
+                              title="Rename"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCategory(cat.id)}
+                              className="p-1 bg-zinc-900 text-zinc-500 hover:text-rose-450 transition-colors rounded"
+                              title="Delete"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Skills Section */}
+              <div className="lg:col-span-7 space-y-8">
+                <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
+                    {editingSkillId ? <Edit2 size={18} /> : <Plus size={18} />}
+                    {editingSkillId ? 'Modify Skill Badge' : 'Add New Skill Badge'}
+                  </h2>
+
+                  <form onSubmit={handleSkillSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Skill Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={skillForm.name || ''}
+                          onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })}
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                          placeholder="e.g. TypeScript or Docker"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Category</label>
+                        <select
+                          value={skillForm.categoryId || ''}
+                          onChange={(e) => setSkillForm({ ...skillForm, categoryId: Number(e.target.value) })}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                        >
+                          <option value="">-- Select Category --</option>
+                          {categoriesList.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-2">
+                      {editingSkillId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingSkillId(null);
+                            setSkillForm({
+                              name: '',
+                              categoryId: categoriesList[0]?.id || undefined,
+                            });
+                          }}
+                          className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 rounded-lg transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        disabled={savingSkill}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors"
+                      >
+                        {savingSkill ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={14} />
+                            {editingSkillId ? 'Save Changes' : 'Create Skill'}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Skills List */}
+                <div className="space-y-6">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Skill Badges</h3>
+
+                  {skillsList.length === 0 ? (
+                    <p className="text-zinc-500 text-sm italic">No skills found. Add one above.</p>
+                  ) : (
+                    <div className="space-y-6">
+                      {categoriesList.map((category) => {
+                        const items = skillsList.filter((s) => s.categoryId === category.id);
+                        if (items.length === 0) return null;
+                        
+                        return (
+                          <div key={`skill-cat-items-${category.id}`} className="space-y-3 bg-zinc-900/10 border border-zinc-850 rounded-2xl p-5">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-violet-400 flex items-center gap-1.5 border-b border-zinc-800 pb-2">
+                              <Award size={14} />
+                              {category.name}
+                            </h4>
+                            <div className="flex flex-wrap gap-2.5 pt-1">
+                              {items.map((item, idx) => (
+                                <div
+                                  key={`admin-skill-${item.id}`}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-sm"
+                                >
+                                  <span className="font-semibold text-zinc-250">{item.name}</span>
+                                  <div className="flex items-center border-l border-zinc-800 pl-2 ml-1 gap-1">
+                                    <button
+                                      onClick={() => handleMoveSkill(item.id, category.id, 'up')}
+                                      disabled={idx === 0}
+                                      className={`text-zinc-500 hover:text-violet-400 transition-colors ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                      title="Move Up"
+                                    >
+                                      <ArrowUp size={12} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleMoveSkill(item.id, category.id, 'down')}
+                                      disabled={idx === items.length - 1}
+                                      className={`text-zinc-500 hover:text-violet-400 transition-colors ${idx === items.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                      title="Move Down"
+                                    >
+                                      <ArrowDown size={12} />
+                                    </button>
+                                    <button
+                                      onClick={() => startEditSkill(item)}
+                                      className="text-zinc-500 hover:text-violet-400 transition-colors"
+                                      title="Edit"
+                                    >
+                                      <Edit2 size={12} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteSkill(item.id)}
+                                      className="text-zinc-500 hover:text-rose-450 transition-colors"
+                                      title="Delete"
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Render uncategorized skills if any */}
+                      {(() => {
+                        const catIds = categoriesList.map((c) => c.id);
+                        const uncategorized = skillsList.filter((s) => !s.categoryId || !catIds.includes(s.categoryId));
+                        if (uncategorized.length === 0) return null;
+                        
+                        return (
+                          <div className="space-y-3 bg-zinc-900/10 border border-zinc-850 rounded-2xl p-5">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5 border-b border-zinc-800 pb-2">
+                              <Award size={14} />
+                              Uncategorized Skills
+                            </h4>
+                            <div className="flex flex-wrap gap-2.5 pt-1">
+                              {uncategorized.map((item) => (
+                                <div
+                                  key={`admin-skill-uncat-${item.id}`}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-sm"
+                                >
+                                  <span className="font-semibold text-zinc-250">{item.name}</span>
+                                  <div className="flex items-center border-l border-zinc-800 pl-2 ml-1 gap-1">
+                                    <button
+                                      onClick={() => startEditSkill(item)}
+                                      className="text-zinc-500 hover:text-violet-400 transition-colors"
+                                      title="Edit"
+                                    >
+                                      <Edit2 size={12} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteSkill(item.id)}
+                                      className="text-zinc-500 hover:text-rose-450 transition-colors"
+                                      title="Delete"
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              </div>
+
             </div>
           )}
         </div>

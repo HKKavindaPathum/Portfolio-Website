@@ -23,6 +23,7 @@ model Project {
   liveLink          String?
   imageUrl          String?
   imageFile         String? @db.LongText
+  order             Int     @default(0)
 }
 
 model CvDetails {
@@ -52,7 +53,16 @@ model Education {
 }
 
 model Skill {
-  id       Int    @id @default(autoincrement())
-  name     String
-  category String
+  id         Int           @id @default(autoincrement())
+  name       String
+  categoryId Int
+  category   SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  order      Int           @default(0)
+}
+
+model SkillCategory {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  order  Int     @default(0)
+  skills Skill[]
 }

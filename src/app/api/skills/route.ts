@@ -6,9 +6,25 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET() {
   try {
     const skills = await prisma.skill.findMany({
-      orderBy: { id: 'asc' },
+      include: {
+        category: true,
+      },
+      orderBy: [
+        { category: { order: 'asc' } },
+        { order: 'asc' },
+        { id: 'asc' }
+      ],
     });
-    return NextResponse.json({ success: true, data: skills });
+
+    const mappedSkills = skills.map((s) => ({
+      id: s.id,
+      name: s.name,
+      categoryId: s.categoryId,
+      category: s.category?.name || 'Uncategorized',
+      order: s.order,
+    }));
+
+    return NextResponse.json({ success: true, data: mappedSkills });
   } catch (error) {
     console.error('Fetch skills error:', error);
     return NextResponse.json(
@@ -27,23 +43,43 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, category } = body;
+    const { name, categoryId } = body;
 
-    if (!name || !category) {
+    if (!name || !categoryId) {
       return NextResponse.json(
-        { success: false, error: 'Name and category are required' },
+        { success: false, error: 'Name and categoryId are required' },
         { status: 400 }
       );
     }
 
+    // Get current max order for this category
+    const maxSkill = await prisma.skill.findFirst({
+      where: { categoryId: Number(categoryId) },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+    const order = maxSkill ? maxSkill.order + 1 : 0;
+
     const skill = await prisma.skill.create({
       data: {
         name,
-        category,
+        categoryId: Number(categoryId),
+        order,
       },
+      include: {
+        category: true,
+      }
     });
 
-    return NextResponse.json({ success: true, data: skill });
+    const mapped = {
+      id: skill.id,
+      name: skill.name,
+      categoryId: skill.categoryId,
+      category: skill.category?.name || 'Uncategorized',
+      order: skill.order,
+    };
+
+    return NextResponse.json({ success: true, data: mapped });
   } catch (error) {
     console.error('Create skill error:', error);
     return NextResponse.json(
@@ -53,7 +89,7 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT update skill (protected)
+// PUT update skill / reorder skills (protected)
 export async function PUT(request: Request) {
   try {
     const auth = await verifyAuth();
@@ -62,11 +98,31 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { id, name, category } = body;
 
-    if (!id || !name || !category) {
+    // Reorder action
+    if (body.action === 'reorder') {
+      const { ids } = body;
+      if (!Array.isArray(ids)) {
+        return NextResponse.json({ success: false, error: 'Invalid skill IDs list' }, { status: 400 });
+      }
+
+      await prisma.$transaction(
+        ids.map((id: number, idx: number) =>
+          prisma.skill.update({
+            where: { id: Number(id) },
+            data: { order: idx },
+          })
+        )
+      );
+
+      return NextResponse.json({ success: true, message: 'Skills reordered successfully' });
+    }
+
+    const { id, name, categoryId } = body;
+
+    if (!id || !name || !categoryId) {
       return NextResponse.json(
-        { success: false, error: 'ID, name, and category are required' },
+        { success: false, error: 'ID, name, and categoryId are required' },
         { status: 400 }
       );
     }
@@ -75,11 +131,22 @@ export async function PUT(request: Request) {
       where: { id: Number(id) },
       data: {
         name,
-        category,
+        categoryId: Number(categoryId),
       },
+      include: {
+        category: true,
+      }
     });
 
-    return NextResponse.json({ success: true, data: skill });
+    const mapped = {
+      id: skill.id,
+      name: skill.name,
+      categoryId: skill.categoryId,
+      category: skill.category?.name || 'Uncategorized',
+      order: skill.order,
+    };
+
+    return NextResponse.json({ success: true, data: mapped });
   } catch (error) {
     console.error('Update skill error:', error);
     return NextResponse.json(
@@ -121,3 +188,4 @@ export async function DELETE(request: Request) {
     );
   }
 }
+

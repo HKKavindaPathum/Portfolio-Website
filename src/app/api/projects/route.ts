@@ -16,8 +16,12 @@ export async function GET() {
         liveLink: true,
         imageUrl: true,
         imageFile: true,
+        order: true,
       },
-      orderBy: { id: 'desc' },
+      orderBy: [
+        { order: 'asc' },
+        { id: 'desc' }
+      ],
     });
 
     const mappedProjects = projects.map((p) => {
@@ -88,6 +92,25 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
+
+    if (body.action === 'reorder') {
+      const { ids } = body;
+      if (!Array.isArray(ids)) {
+        return NextResponse.json({ success: false, error: 'Invalid project IDs list' }, { status: 400 });
+      }
+
+      await prisma.$transaction(
+        ids.map((id: number, idx: number) =>
+          prisma.project.update({
+            where: { id: Number(id) },
+            data: { order: idx },
+          })
+        )
+      );
+
+      return NextResponse.json({ success: true, message: 'Projects reordered successfully' });
+    }
+
     const { id, title, description, techStack, githubLink, githubBackendLink, liveLink, imageUrl, imageFile } = body;
 
     if (!id || !title || !description || !techStack) {

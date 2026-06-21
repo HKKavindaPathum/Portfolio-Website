@@ -21,13 +21,6 @@ const getCategoryIcon = (category: string) => {
   return <Cpu className="w-6 h-6 text-violet-600 dark:text-violet-400" />;
 };
 
-const preferredOrder = [
-  'Programming Languages',
-  'Web & UI (Frameworks & Libs)',
-  'Cloud & Databases',
-  'Tools & Technologies'
-];
-
 export default function Skills() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,23 +58,19 @@ export default function Skills() {
     );
   }
 
-  // Group skills by category
+  // Group skills by category in order of appearance (server-sorted order)
   const grouped: { [key: string]: string[] } = {};
-  skills.forEach((skill) => {
-    if (!grouped[skill.category]) {
-      grouped[skill.category] = [];
-    }
-    grouped[skill.category].push(skill.name);
-  });
+  const categories: string[] = [];
 
-  // Sort categories based on preferred order, then alphabetical
-  const categories = Object.keys(grouped).sort((a, b) => {
-    const indexA = preferredOrder.indexOf(a);
-    const indexB = preferredOrder.indexOf(b);
-    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-    if (indexA !== -1) return -1;
-    if (indexB !== -1) return 1;
-    return a.localeCompare(b);
+  skills.forEach((skill) => {
+    const catName = skill.category || 'Uncategorized';
+    if (!categories.includes(catName)) {
+      categories.push(catName);
+    }
+    if (!grouped[catName]) {
+      grouped[catName] = [];
+    }
+    grouped[catName].push(skill.name);
   });
 
   return (
