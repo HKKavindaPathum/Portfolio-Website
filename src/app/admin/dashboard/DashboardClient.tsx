@@ -21,6 +21,7 @@ interface Project {
   description: string;
   techStack: string;
   githubLink?: string | null;
+  githubBackendLink?: string | null;
   liveLink?: string | null;
   imageUrl?: string | null;
   imageFile?: string | null;
@@ -103,6 +104,7 @@ export default function DashboardClient() {
     description: '',
     techStack: '',
     githubLink: '',
+    githubBackendLink: '',
     liveLink: '',
     imageUrl: '',
     imageFile: '',
@@ -326,6 +328,7 @@ export default function DashboardClient() {
           description: '',
           techStack: '',
           githubLink: '',
+          githubBackendLink: '',
           liveLink: '',
           imageUrl: '',
           imageFile: '',
@@ -370,6 +373,7 @@ export default function DashboardClient() {
       description: project.description,
       techStack: project.techStack,
       githubLink: project.githubLink || '',
+      githubBackendLink: project.githubBackendLink || '',
       liveLink: project.liveLink || '',
       imageUrl: isDbImage ? '' : (project.imageUrl || ''),
       imageFile: isDbImage ? project.imageUrl : undefined,
@@ -899,13 +903,23 @@ export default function DashboardClient() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">GitHub Link</label>
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">GitHub Link (Frontend)</label>
                       <input
                         type="url"
                         value={projectForm.githubLink || ''}
                         onChange={(e) => setProjectForm({ ...projectForm, githubLink: e.target.value })}
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
+                        placeholder="https://github.com/..."
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">GitHub Link (Backend)</label>
+                      <input
+                        type="url"
+                        value={projectForm.githubBackendLink || ''}
+                        onChange={(e) => setProjectForm({ ...projectForm, githubBackendLink: e.target.value })}
                         className="w-full bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-lg p-3 text-sm text-zinc-200 outline-none"
                         placeholder="https://github.com/..."
                       />
@@ -979,6 +993,7 @@ export default function DashboardClient() {
                             description: '',
                             techStack: '',
                             githubLink: '',
+                            githubBackendLink: '',
                             liveLink: '',
                             imageUrl: '',
                             imageFile: '',

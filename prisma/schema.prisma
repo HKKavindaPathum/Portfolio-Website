@@ -14,14 +14,15 @@ model Admin {
 }
 
 model Project {
-  id          Int     @id @default(autoincrement())
-  title       String
-  description String  @db.Text
-  techStack   String
-  githubLink  String?
-  liveLink    String?
-  imageUrl    String?
-  imageFile   String? @db.LongText
+  id                Int     @id @default(autoincrement())
+  title             String
+  description       String  @db.Text
+  techStack         String
+  githubLink        String?
+  githubBackendLink String?
+  liveLink          String?
+  imageUrl          String?
+  imageFile         String? @db.LongText
 }
 
 model CvDetails {

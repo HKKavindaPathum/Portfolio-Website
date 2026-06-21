@@ -27,6 +27,7 @@ interface Project {
   description: string;
   techStack: string;
   githubLink?: string | null;
+  githubBackendLink?: string | null;
   liveLink?: string | null;
   imageUrl?: string | null;
 }
@@ -123,7 +124,12 @@ export default function ProjectsGrid() {
                   >
                     <div className="p-6">
                       {/* Project Image/Icon */}
-                      <div className="h-44 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-center mb-6 overflow-hidden relative">
+                      <a
+                        href={`/projects/${project.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block h-44 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-center mb-6 overflow-hidden relative group-hover:border-violet-500/50 transition-colors"
+                      >
                         {project.imageUrl ? (
                           <Image
                             src={project.imageUrl}
@@ -138,15 +144,13 @@ export default function ProjectsGrid() {
                             <span className="text-xs uppercase tracking-widest font-mono">No Preview</span>
                           </div>
                         )}
-                      </div>
+                      </a>
 
-                      <h4 className="text-xl font-bold text-zinc-900 group-hover:text-violet-655 dark:text-white dark:group-hover:text-violet-400 transition-colors mb-2">
-                        {project.title}
+                      <h4 className="text-xl font-bold text-zinc-900 group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-400 transition-colors mb-4">
+                        <a href={`/projects/${project.id}`} target="_blank" rel="noopener noreferrer">
+                          {project.title}
+                        </a>
                       </h4>
-
-                      <p className="text-sm text-zinc-650 dark:text-zinc-400 leading-relaxed mb-4 line-clamp-3">
-                        {project.description}
-                      </p>
 
                       {/* Tech badges */}
                       <div className="flex flex-wrap gap-1.5 mb-4">
@@ -163,17 +167,15 @@ export default function ProjectsGrid() {
 
                     {/* Card Actions */}
                     <div className="p-6 pt-0 flex gap-4 border-t border-zinc-200/50 dark:border-zinc-800/30 mt-auto">
-                      {project.githubLink && (
-                        <a
-                          href={project.githubLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-                        >
-                          <GithubIcon size={14} />
-                          Source
-                        </a>
-                      )}
+                      <a
+                        href={`/projects/${project.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                      >
+                        <ExternalLink size={14} />
+                        View Details
+                      </a>
                       {project.liveLink && (
                         <a
                           href={project.liveLink}

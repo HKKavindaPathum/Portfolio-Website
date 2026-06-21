@@ -12,6 +12,7 @@ export async function GET() {
         description: true,
         techStack: true,
         githubLink: true,
+        githubBackendLink: true,
         liveLink: true,
         imageUrl: true,
         imageFile: true,
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, description, techStack, githubLink, liveLink, imageUrl, imageFile } = body;
+    const { title, description, techStack, githubLink, githubBackendLink, liveLink, imageUrl, imageFile } = body;
 
     if (!title || !description || !techStack) {
       return NextResponse.json(
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
         description,
         techStack,
         githubLink: githubLink || null,
+        githubBackendLink: githubBackendLink || null,
         liveLink: liveLink || null,
         imageUrl: imageUrl || null,
         imageFile: imageFile || null,
@@ -86,7 +88,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { id, title, description, techStack, githubLink, liveLink, imageUrl, imageFile } = body;
+    const { id, title, description, techStack, githubLink, githubBackendLink, liveLink, imageUrl, imageFile } = body;
 
     if (!id || !title || !description || !techStack) {
       return NextResponse.json(
@@ -100,6 +102,7 @@ export async function PUT(request: Request) {
       description,
       techStack,
       githubLink: githubLink || null,
+      githubBackendLink: githubBackendLink || null,
       liveLink: liveLink || null,
     };
 
