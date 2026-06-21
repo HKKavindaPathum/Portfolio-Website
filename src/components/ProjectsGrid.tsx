@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ExternalLink, Code } from 'lucide-react';
 import Image from 'next/image';
+import ProjectDetailsModal from './ProjectDetailsModal';
 
 const GithubIcon = ({ size = 14 }: { size?: number }) => (
   <svg
@@ -34,6 +35,7 @@ interface Project {
 
 export default function ProjectsGrid() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,11 +126,9 @@ export default function ProjectsGrid() {
                   >
                     <div className="p-6">
                       {/* Project Image/Icon */}
-                      <a
-                        href={`/projects/${project.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block h-44 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-center mb-6 overflow-hidden relative group-hover:border-violet-500/50 transition-colors"
+                      <button
+                        onClick={() => setSelectedProject(project)}
+                        className="w-full block h-44 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-center mb-6 overflow-hidden relative group-hover:border-violet-500/50 transition-colors cursor-pointer text-left"
                       >
                         {project.imageUrl ? (
                           <Image
@@ -139,17 +139,20 @@ export default function ProjectsGrid() {
                             className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
-                          <div className="flex flex-col items-center gap-2 text-zinc-400 dark:text-zinc-500 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                          <div className="flex flex-col items-center gap-2 text-zinc-400 dark:text-zinc-500 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors mx-auto">
                             <Code size={40} className="stroke-[1.5]" />
                             <span className="text-xs uppercase tracking-widest font-mono">No Preview</span>
                           </div>
                         )}
-                      </a>
+                      </button>
 
                       <h4 className="text-xl font-bold text-zinc-900 group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-400 transition-colors mb-4">
-                        <a href={`/projects/${project.id}`} target="_blank" rel="noopener noreferrer">
+                        <button
+                          onClick={() => setSelectedProject(project)}
+                          className="hover:underline text-left cursor-pointer"
+                        >
                           {project.title}
-                        </a>
+                        </button>
                       </h4>
 
                       {/* Tech badges */}
@@ -167,15 +170,13 @@ export default function ProjectsGrid() {
 
                     {/* Card Actions */}
                     <div className="p-6 pt-0 flex gap-4 border-t border-zinc-200/50 dark:border-zinc-800/30 mt-auto">
-                      <a
-                        href={`/projects/${project.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                      <button
+                        onClick={() => setSelectedProject(project)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
                       >
                         <ExternalLink size={14} />
                         View Details
-                      </a>
+                      </button>
                       {project.liveLink && (
                         <a
                           href={project.liveLink}
@@ -195,6 +196,12 @@ export default function ProjectsGrid() {
           </div>
         )}
       </div>
+
+      {/* Project Details Modal */}
+      <ProjectDetailsModal
+        project={selectedProject}
+        onClose={() => setSelectedProject(null)}
+      />
     </section>
   );
 }

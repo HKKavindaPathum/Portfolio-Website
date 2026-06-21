@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import toast, { Toaster } from 'react-hot-toast';
 import {
   Briefcase,
   FileText,
@@ -186,7 +187,7 @@ export default function DashboardClient() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        alert('CV details updated successfully!');
+        toast.success('CV details updated successfully!');
       } else {
         setError(data.error || 'Failed to update CV');
       }
@@ -203,13 +204,13 @@ export default function DashboardClient() {
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      alert('Please upload a PDF file only.');
+      toast.error('Please upload a PDF file only.');
       e.target.value = '';
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('File is too large. Please upload a file smaller than 5MB.');
+      toast.error('File is too large. Please upload a file smaller than 5MB.');
       e.target.value = '';
       return;
     }
@@ -222,7 +223,7 @@ export default function DashboardClient() {
     };
     reader.onerror = (error) => {
       console.error('Error reading PDF file:', error);
-      alert('Failed to read file.');
+      toast.error('Failed to read PDF file.');
     };
     reader.readAsDataURL(file);
   };
@@ -232,7 +233,7 @@ export default function DashboardClient() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file only.');
+      toast.error('Please upload an image file only.');
       e.target.value = '';
       return;
     }
@@ -268,17 +269,17 @@ export default function DashboardClient() {
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           setProjectForm((prev) => ({ ...prev, imageFile: dataUrl }));
         } else {
-          alert('Failed to process image.');
+          toast.error('Failed to process image.');
         }
       };
       img.onerror = () => {
-        alert('Failed to load image file.');
+        toast.error('Failed to load image file.');
       };
       img.src = event.target?.result as string;
     };
     reader.onerror = (error) => {
       console.error('Error reading image file:', error);
-      alert('Failed to read file.');
+      toast.error('Failed to read image file.');
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -334,7 +335,7 @@ export default function DashboardClient() {
           imageFile: '',
         });
         setEditingProjectId(null);
-        alert(isEdit ? 'Project updated!' : 'Project created!');
+        toast.success(isEdit ? 'Project updated successfully!' : 'Project created successfully!');
       } else {
         setError(data.error || 'Failed to save project');
       }
@@ -415,7 +416,7 @@ export default function DashboardClient() {
           description: '',
         });
         setEditingEducationId(null);
-        alert(isEdit ? 'Education entry updated!' : 'Education entry created!');
+        toast.success(isEdit ? 'Education entry updated successfully!' : 'Education entry created successfully!');
       } else {
         setError(data.error || 'Failed to save education entry');
       }
@@ -502,7 +503,7 @@ export default function DashboardClient() {
         });
         setCustomCategory('');
         setEditingSkillId(null);
-        alert(isEdit ? 'Skill updated!' : 'Skill created!');
+        toast.success(isEdit ? 'Skill updated successfully!' : 'Skill created successfully!');
       } else {
         setError(data.error || 'Failed to save skill');
       }
@@ -559,6 +560,7 @@ export default function DashboardClient() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200">
+      <Toaster position="top-right" toastOptions={{ style: { background: '#18181b', color: '#f4f4f5', border: '1px solid #27272a' } }} />
       {/* Header bar */}
       <header className="bg-zinc-900 border-b border-zinc-800 py-4 px-6 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
