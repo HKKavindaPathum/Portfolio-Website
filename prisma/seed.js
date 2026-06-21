@@ -76,44 +76,34 @@ async function main() {
   await prisma.project.createMany({
     data: [
       {
-        title: 'MERN E-commerce Website',
-        description: 'Developed a full-stack E-commerce platform to enable online product browsing, shopping, and secure transactions.',
-        techStack: 'React.js, Node.js, Express.js, MongoDB, Tailwind CSS, Git',
-        githubLink: 'https://github.com/HKKavindaPathum',
-        liveLink: '',
-        imageUrl: '',
+        title: 'TechZone Computer Shop',
+        description: 'A premium, full-stack e-commerce web application designed for a modern computer components and accessories retailer. It features a complete customer experience with glassmorphism UI layouts, real-time live product search, dynamic category filtering, and a stateful shopping cart persisted via LocalStorage. The platform includes a seamless checkout workflow supporting Cash on Delivery (COD) and Bank Transfer payments. It also features a robust Admin Dashboard equipped with high-level sales analytics (total revenue, order volume, product count), interactive order status tracking, and full product inventory CRUD operations integrated with Cloudinary for cloud-based asset management. Secured using bcryptjs password hashing and stateless JWT-based route protection.',
+        techStack: 'Next.js (App Router), React, Tailwind CSS v4, Prisma ORM, PostgreSQL (Neon DB), Cloudinary, JWT, BcryptJS, Vercel',
+        githubLink: 'https://github.com/HKKavindaPathum/TechZone-Computer-Shop-.git',
+        githubBackendLink: null,
+        liveLink: 'https://tech-zone-computer-shop.vercel.app/',
+        imageUrl: '/project_images/techzone.png',
+        order: 0,
       },
       {
-        title: 'Invoice Management System',
-        description: 'Developed a system to manage invoices, customer details, and payments, streamlining billing and record-keeping.',
-        techStack: 'Laravel, PHP, Blade, Tailwind CSS, MySQL, Git',
-        githubLink: 'https://github.com/HKKavindaPathum',
-        liveLink: '',
-        imageUrl: '',
+        title: 'Crystal Beauty Clear',
+        description: 'A premium MERN stack e-commerce web application for a cosmetics and beauty brand. Features a complete customer experience with dynamic catalog browsing, real-time search, Google OAuth & credentials authentication, a responsive shopping cart, and a product review system. It also includes a full-featured Admin Dashboard with interactive sales analytics charts (using Recharts), product inventory management (CRUD), order tracking (pending/completed/cancelled), and user/review moderation. Integrated with Supabase cloud storage for product assets, JWT for secure route protection, and Nodemailer for OTP-based password resets.',
+        techStack: 'React, Vite, Tailwind CSS, Express.js, Node.js, Google OAuth, JWT, Vercel, Railway, Supabase, MongoDB',
+        githubLink: 'https://github.com/HKKavindaPathum/Crystal_Beauty_Clear_Frontend.git',
+        githubBackendLink: 'https://github.com/HKKavindaPathum/Crystal_Beauty_Clear_Backend.git',
+        liveLink: 'https://crystal-beauty-clear-frontend-amber.vercel.app/',
+        imageUrl: '/project_images/crystal_beauty.png',
+        order: 1,
       },
       {
-        title: 'Snake Identification Web Application',
-        description: 'Developed a web application to identify snake species from images, enhancing public awareness and safety regarding venomous snakes in Sri Lanka.',
-        techStack: 'React.js, Flask, TensorFlow, HTML, CSS, JavaScript, Git',
-        githubLink: 'https://github.com/HKKavindaPathum',
-        liveLink: '',
-        imageUrl: '',
-      },
-      {
-        title: 'YouTube Frontend Clone',
-        description: 'Developed a responsive YouTube-like frontend to emulate the core UI components of the platform, enhancing front-end development skills.',
-        techStack: 'HTML, CSS, JavaScript, Git',
-        githubLink: 'https://github.com/HKKavindaPathum',
-        liveLink: '',
-        imageUrl: '',
-      },
-      {
-        title: 'Computer Shop Website',
-        description: 'Developed a user-friendly website for showcasing computer products and facilitating customer interactions, simulating an online electronics store experience.',
-        techStack: 'HTML, CSS, JavaScript, Git',
-        githubLink: 'https://github.com/HKKavindaPathum',
-        liveLink: '',
-        imageUrl: '',
+        title: 'Portfolio-Website',
+        description: 'A premium personal portfolio website designed for a software engineer to showcase professional projects, skills, education, and career achievements. It features a modern, responsive user interface with clean architecture, interactive components, dynamic contact forms, and a secure administration panel for content management. Built using Next.js for server-side rendering and search engine optimization, powered by Prisma ORM and MySQL database, and protected with stateful authentication.',
+        techStack: 'Next.js (App Router), React, Tailwind CSS v4, Prisma ORM, MySQL, JWT, BcryptJS, Vercel',
+        githubLink: 'https://github.com/HKKavindaPathum/Portfolio-Website.git',
+        githubBackendLink: null,
+        liveLink: 'https://portfolio-website-nine-sage-15.vercel.app/',
+        imageUrl: '/project_images/portfolio.png',
+        order: 2,
       }
     ]
   });
@@ -160,42 +150,62 @@ async function main() {
 
   // Seed Skills
   await prisma.skill.deleteMany();
-  console.log('Cleared old skills.');
+  await prisma.skillCategory.deleteMany();
+  console.log('Cleared old skills and categories.');
+
+  const categoriesData = [
+    { name: 'Programming Languages', order: 0 },
+    { name: 'Web & UI (Frameworks & Libs)', order: 1 },
+    { name: 'Cloud & Databases', order: 2 },
+    { name: 'Tools & Technologies', order: 3 }
+  ];
+
+  const categoryMap = {};
+  for (const cat of categoriesData) {
+    const createdCat = await prisma.skillCategory.create({
+      data: cat
+    });
+    categoryMap[createdCat.name] = createdCat.id;
+  }
+  console.log('Skill categories seeded.');
+
+  const skillsData = [
+    // Programming Languages
+    { name: 'JavaScript', categoryId: categoryMap['Programming Languages'], order: 0 },
+    { name: 'TypeScript', categoryId: categoryMap['Programming Languages'], order: 1 },
+    { name: 'PHP', categoryId: categoryMap['Programming Languages'], order: 2 },
+    { name: 'Python', categoryId: categoryMap['Programming Languages'], order: 3 },
+    { name: 'Java', categoryId: categoryMap['Programming Languages'], order: 4 },
+    { name: 'C++', categoryId: categoryMap['Programming Languages'], order: 5 },
+    
+    // Web & UI
+    { name: 'Next.js', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 0 },
+    { name: 'React.js', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 1 },
+    { name: 'Node.js', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 2 },
+    { name: 'Express.js', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 3 },
+    { name: 'Laravel', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 4 },
+    { name: 'Flask', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 5 },
+    { name: 'Tailwind CSS', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 6 },
+    { name: 'HTML/CSS', categoryId: categoryMap['Web & UI (Frameworks & Libs)'], order: 7 },
+
+    // Cloud & Databases
+    { name: 'AWS', categoryId: categoryMap['Cloud & Databases'], order: 0 },
+    { name: 'Vercel', categoryId: categoryMap['Cloud & Databases'], order: 1 },
+    { name: 'Railway', categoryId: categoryMap['Cloud & Databases'], order: 2 },
+    { name: 'MySQL', categoryId: categoryMap['Cloud & Databases'], order: 3 },
+    { name: 'MongoDB', categoryId: categoryMap['Cloud & Databases'], order: 4 },
+
+    // Tools & Technologies
+    { name: 'Git', categoryId: categoryMap['Tools & Technologies'], order: 0 },
+    { name: 'Postman', categoryId: categoryMap['Tools & Technologies'], order: 1 },
+    { name: 'TestNG', categoryId: categoryMap['Tools & Technologies'], order: 2 },
+    { name: 'WordPress', categoryId: categoryMap['Tools & Technologies'], order: 3 },
+    { name: 'XAMPP', categoryId: categoryMap['Tools & Technologies'], order: 4 },
+    { name: 'TensorFlow', categoryId: categoryMap['Tools & Technologies'], order: 5 },
+  ];
+
   await prisma.skill.createMany({
-    data: [
-      // Programming Languages
-      { name: 'JavaScript', category: 'Programming Languages' },
-      { name: 'TypeScript', category: 'Programming Languages' },
-      { name: 'PHP', category: 'Programming Languages' },
-      { name: 'Python', category: 'Programming Languages' },
-      { name: 'Java', category: 'Programming Languages' },
-      { name: 'C++', category: 'Programming Languages' },
-      
-      // Web & UI
-      { name: 'Next.js', category: 'Web & UI (Frameworks & Libs)' },
-      { name: 'React.js', category: 'Web & UI (Frameworks & Libs)' },
-      { name: 'Node.js', category: 'Web & UI (Frameworks & Libs)' },
-      { name: 'Express.js', category: 'Web & UI (Frameworks & Libs)' },
-      { name: 'Laravel', category: 'Web & UI (Frameworks & Libs)' },
-      { name: 'Flask', category: 'Web & UI (Frameworks & Libs)' },
-      { name: 'Tailwind CSS', category: 'Web & UI (Frameworks & Libs)' },
-      { name: 'HTML/CSS', category: 'Web & UI (Frameworks & Libs)' },
-
-      // Cloud & Databases
-      { name: 'AWS', category: 'Cloud & Databases' },
-      { name: 'Vercel', category: 'Cloud & Databases' },
-      { name: 'Railway', category: 'Cloud & Databases' },
-      { name: 'MySQL', category: 'Cloud & Databases' },
-      { name: 'MongoDB', category: 'Cloud & Databases' },
-
-      // Tools & Technologies
-      { name: 'Git', category: 'Tools & Technologies' },
-      { name: 'Postman', category: 'Tools & Technologies' },
-      { name: 'TestNG', category: 'Tools & Technologies' },
-      { name: 'WordPress', category: 'Tools & Technologies' },
-      { name: 'XAMPP', category: 'Tools & Technologies' },
-      { name: 'TensorFlow', category: 'Tools & Technologies' },
-    ]
+    data: skillsData
   });
   console.log('User skills seeded.');
 }
