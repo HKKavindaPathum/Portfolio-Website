@@ -796,7 +796,7 @@ export default function DashboardClient() {
               setError(null);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
-              activeTab === 'projects'
+              activeTab === 'education'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
                 : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
             }`}
@@ -811,7 +811,7 @@ export default function DashboardClient() {
               setError(null);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
-              activeTab === 'education'
+              activeTab === 'skills'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
                 : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
             }`}
@@ -826,7 +826,7 @@ export default function DashboardClient() {
               setError(null);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
-              activeTab === 'skills'
+              activeTab === 'projects'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
                 : 'bg-transparent text-zinc-400 border-transparent hover:bg-zinc-900 hover:text-white'
             }`}
