@@ -6,7 +6,10 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET() {
   try {
     const education = await prisma.education.findMany({
-      orderBy: { id: 'asc' },
+      orderBy: [
+        { order: 'asc' },
+        { id: 'asc' }
+      ],
     });
     return NextResponse.json({ success: true, data: education });
   } catch (error) {
@@ -64,17 +67,38 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
+
+    // Reorder action
+    if (body.action === 'reorder') {
+      const { ids } = body;
+      if (!Array.isArray(ids)) {
+        return NextResponse.json({ success: false, error: 'Invalid education IDs list' }, { status: 400 });
+      }
+
+      await prisma.$transaction(
+        ids.map((id: number, idx: number) =>
+          prisma.education.update({
+            where: { id: Number(id) },
+            data: { order: idx },
+          })
+        )
+      );
+
+      return NextResponse.json({ success: true, message: 'Education entries reordered successfully' });
+    }
+
     const { id, degree, institution, period, description } = body;
 
-    if (!id || !degree || !institution || !period || !description) {
+    const numericId = Number(id);
+    if (!id || isNaN(numericId) || !degree || !institution || !period || !description) {
       return NextResponse.json(
-        { success: false, error: 'ID, degree, institution, period, and description are required' },
+        { success: false, error: 'Valid numeric ID, degree, institution, period, and description are required' },
         { status: 400 }
       );
     }
 
     const entry = await prisma.education.update({
-      where: { id: Number(id) },
+      where: { id: numericId },
       data: {
         degree,
         institution,
@@ -104,14 +128,14 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const idStr = searchParams.get('id');
 
-    if (!idStr) {
+    const id = Number(idStr);
+    if (!idStr || isNaN(id)) {
       return NextResponse.json(
-        { success: false, error: 'Education ID is required' },
+        { success: false, error: 'Valid numeric Education ID is required' },
         { status: 400 }
       );
     }
 
-    const id = Number(idStr);
     await prisma.education.delete({
       where: { id },
     });

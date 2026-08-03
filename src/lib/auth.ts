@@ -1,7 +1,18 @@
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-123456-change-in-env';
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('CRITICAL SECURITY ERROR: JWT_SECRET environment variable is missing in production!');
+    }
+    return 'development-only-fallback-secret-key-change-in-production-env';
+  }
+  return secret;
+};
+
+const JWT_SECRET = getJwtSecret();
 
 export interface JwtPayload {
   id: number;

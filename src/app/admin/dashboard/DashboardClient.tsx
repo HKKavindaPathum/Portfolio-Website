@@ -105,6 +105,56 @@ export default function DashboardClient() {
   const [savingCategory, setSavingCategory] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Original Order snapshots (for dirty checking)
+  const [originalSkillsOrder, setOriginalSkillsOrder] = useState<number[]>([]);
+  const [originalCategoriesOrder, setOriginalCategoriesOrder] = useState<number[]>([]);
+  const [originalProjectsOrder, setOriginalProjectsOrder] = useState<number[]>([]);
+  const [originalEducationOrder, setOriginalEducationOrder] = useState<number[]>([]);
+
+  // Reorder saving states
+  const [savingSkillsOrder, setSavingSkillsOrder] = useState(false);
+  const [savingCategoriesOrder, setSavingCategoriesOrder] = useState(false);
+  const [savingProjectsOrder, setSavingProjectsOrder] = useState(false);
+  const [savingEducationOrder, setSavingEducationOrder] = useState(false);
+
+  // Dirty checking variables
+  const isSkillsOrderDirty = JSON.stringify(skillsList.map((s) => s.id)) !== JSON.stringify(originalSkillsOrder);
+  const isCategoriesOrderDirty = JSON.stringify(categoriesList.map((c) => c.id)) !== JSON.stringify(originalCategoriesOrder);
+  const isProjectsOrderDirty = JSON.stringify(projects.map((p) => p.id)) !== JSON.stringify(originalProjectsOrder);
+  const isEducationOrderDirty = JSON.stringify(educationList.map((e) => e.id)) !== JSON.stringify(originalEducationOrder);
+
+  const handleTabSwitch = (newTab: 'cv' | 'projects' | 'education' | 'skills') => {
+    const hasUnsaved = isSkillsOrderDirty || isCategoriesOrderDirty || isProjectsOrderDirty || isEducationOrderDirty;
+    if (hasUnsaved) {
+      if (!confirm('ඔබ සිදුකළ order වෙනස්කම් save වී නැත. Save නොකර වෙනත් පිටුවකට යාමට අවශ්‍යද? (Unsaved order changes will be discarded)')) {
+        return;
+      }
+      // Reset orders to original
+      setSkillsList(prev => [...prev].sort((a, b) => {
+        const indexA = originalSkillsOrder.indexOf(a.id);
+        const indexB = originalSkillsOrder.indexOf(b.id);
+        return indexA - indexB;
+      }));
+      setCategoriesList(prev => [...prev].sort((a, b) => {
+        const indexA = originalCategoriesOrder.indexOf(a.id);
+        const indexB = originalCategoriesOrder.indexOf(b.id);
+        return indexA - indexB;
+      }));
+      setProjects(prev => [...prev].sort((a, b) => {
+        const indexA = originalProjectsOrder.indexOf(a.id);
+        const indexB = originalProjectsOrder.indexOf(b.id);
+        return indexA - indexB;
+      }));
+      setEducationList(prev => [...prev].sort((a, b) => {
+        const indexA = originalEducationOrder.indexOf(a.id);
+        const indexB = originalEducationOrder.indexOf(b.id);
+        return indexA - indexB;
+      }));
+    }
+    setActiveTab(newTab);
+    setError(null);
+  };
+
   // Project Form State
   const [projectForm, setProjectForm] = useState<Partial<Project>>({
     title: '',
@@ -156,14 +206,23 @@ export default function DashboardClient() {
         const skillData = await skillRes.json();
         const catData = await catRes.json();
 
-        if (projData.success) setProjects(projData.data);
+        if (projData.success) {
+          setProjects(projData.data);
+          setOriginalProjectsOrder(projData.data.map((p: Project) => p.id));
+        }
         if (cvData.success) setCvDetails(cvData.data);
         if (eduData.success) {
-          const sortedEdu = [...eduData.data].sort((a, b) => b.id - a.id);
-          setEducationList(sortedEdu);
+          setEducationList(eduData.data);
+          setOriginalEducationOrder(eduData.data.map((e: Education) => e.id));
         }
-        if (skillData.success) setSkillsList(skillData.data);
-        if (catData.success) setCategoriesList(catData.data);
+        if (skillData.success) {
+          setSkillsList(skillData.data);
+          setOriginalSkillsOrder(skillData.data.map((s: Skill) => s.id));
+        }
+        if (catData.success) {
+          setCategoriesList(catData.data);
+          setOriginalCategoriesOrder(catData.data.map((c: SkillCategory) => c.id));
+        }
       } catch (err) {
         console.error(err);
         setError('Failed to load dashboard data.');
@@ -308,7 +367,7 @@ export default function DashboardClient() {
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
-      const payload: any = isEdit ? { ...projectForm, id: editingProjectId } : { ...projectForm };
+      const payload: Partial<Project> & { id?: number } = isEdit ? { ...projectForm, id: editingProjectId } : { ...projectForm };
 
       // Handle image updates selectively
       if (isEdit) {
@@ -331,11 +390,14 @@ export default function DashboardClient() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        let updated: Project[];
         if (isEdit) {
-          setProjects(projects.map((p) => (p.id === editingProjectId ? data.data : p)));
+          updated = projects.map((p) => (p.id === editingProjectId ? data.data : p));
         } else {
-          setProjects([data.data, ...projects]);
+          updated = [data.data, ...projects];
         }
+        setProjects(updated);
+        setOriginalProjectsOrder(updated.map((p) => p.id));
         setProjectForm({
           title: '',
           description: '',
@@ -368,7 +430,9 @@ export default function DashboardClient() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setProjects(projects.filter((p) => p.id !== id));
+        const updated = projects.filter((p) => p.id !== id);
+        setProjects(updated);
+        setOriginalProjectsOrder(updated.map((p) => p.id));
       } else {
         setError(data.error || 'Failed to delete project');
       }
@@ -414,13 +478,14 @@ export default function DashboardClient() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        let updated: Education[];
         if (isEdit) {
-          setEducationList(
-            educationList.map((item) => (item.id === editingEducationId ? data.data : item))
-          );
+          updated = educationList.map((item) => (item.id === editingEducationId ? data.data : item));
         } else {
-          setEducationList([data.data, ...educationList]);
+          updated = [data.data, ...educationList];
         }
+        setEducationList(updated);
+        setOriginalEducationOrder(updated.map((e) => e.id));
         setEducationForm({
           degree: '',
           institution: '',
@@ -449,7 +514,9 @@ export default function DashboardClient() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setEducationList(educationList.filter((item) => item.id !== id));
+        const updated = educationList.filter((item) => item.id !== id);
+        setEducationList(updated);
+        setOriginalEducationOrder(updated.map((e) => e.id));
       } else {
         setError(data.error || 'Failed to delete education entry');
       }
@@ -501,13 +568,14 @@ export default function DashboardClient() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        let updated: Skill[];
         if (isEdit) {
-          setSkillsList(
-            skillsList.map((item) => (item.id === editingSkillId ? data.data : item))
-          );
+          updated = skillsList.map((item) => (item.id === editingSkillId ? data.data : item));
         } else {
-          setSkillsList([...skillsList, data.data]);
+          updated = [...skillsList, data.data];
         }
+        setSkillsList(updated);
+        setOriginalSkillsOrder(updated.map((s) => s.id));
         setSkillForm({
           name: '',
           categoryId: categoriesList[0]?.id || undefined,
@@ -534,7 +602,9 @@ export default function DashboardClient() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setSkillsList(skillsList.filter((item) => item.id !== id));
+        const updated = skillsList.filter((item) => item.id !== id);
+        setSkillsList(updated);
+        setOriginalSkillsOrder(updated.map((s) => s.id));
         toast.success('Skill deleted successfully');
       } else {
         toast.error(data.error || 'Failed to delete skill');
@@ -577,20 +647,21 @@ export default function DashboardClient() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        let updatedCats: SkillCategory[];
         if (isEdit) {
-          setCategoriesList(
-            categoriesList.map((item) => (item.id === editingCategoryId ? data.data : item))
+          updatedCats = categoriesList.map((item) => (item.id === editingCategoryId ? data.data : item));
+          const updatedSkills = skillsList.map((skill) =>
+            skill.categoryId === editingCategoryId
+              ? { ...skill, category: data.data.name }
+              : skill
           );
-          setSkillsList(
-            skillsList.map((skill) =>
-              skill.categoryId === editingCategoryId
-                ? { ...skill, category: data.data.name }
-                : skill
-            )
-          );
+          setSkillsList(updatedSkills);
+          setOriginalSkillsOrder(updatedSkills.map((s) => s.id));
         } else {
-          setCategoriesList([...categoriesList, data.data]);
+          updatedCats = [...categoriesList, data.data];
         }
+        setCategoriesList(updatedCats);
+        setOriginalCategoriesOrder(updatedCats.map((c) => c.id));
         setCategoryForm({ name: '' });
         setEditingCategoryId(null);
         toast.success(isEdit ? 'Category updated successfully!' : 'Category created successfully!');
@@ -620,7 +691,9 @@ export default function DashboardClient() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setCategoriesList(categoriesList.filter((item) => item.id !== id));
+        const updatedCats = categoriesList.filter((item) => item.id !== id);
+        setCategoriesList(updatedCats);
+        setOriginalCategoriesOrder(updatedCats.map((c) => c.id));
         toast.success('Category deleted successfully');
       } else {
         toast.error(data.error || 'Failed to delete category');
@@ -637,7 +710,7 @@ export default function DashboardClient() {
   };
 
   // 6. Reordering Handlers
-  const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
+  const handleMoveCategory = (index: number, direction: 'up' | 'down') => {
     const nextIndex = direction === 'up' ? index - 1 : index + 1;
     if (nextIndex < 0 || nextIndex >= categoriesList.length) return;
 
@@ -647,27 +720,9 @@ export default function DashboardClient() {
     newList[nextIndex] = temp;
 
     setCategoriesList(newList);
-
-    try {
-      const res = await fetch('/api/skills/categories', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'reorder',
-          ids: newList.map((c) => c.id),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        toast.error(data.error || 'Failed to save category order');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('An error occurred while reordering categories');
-    }
   };
 
-  const handleMoveSkill = async (skillId: number, categoryId: number, direction: 'up' | 'down') => {
+  const handleMoveSkill = (skillId: number, categoryId: number, direction: 'up' | 'down') => {
     const categorySkills = skillsList.filter((s) => s.categoryId === categoryId);
     const index = categorySkills.findIndex((s) => s.id === skillId);
     const nextIndex = direction === 'up' ? index - 1 : index + 1;
@@ -678,7 +733,7 @@ export default function DashboardClient() {
     swappedSkills[index] = swappedSkills[nextIndex];
     swappedSkills[nextIndex] = temp;
 
-    const newList = [];
+    const newList: Skill[] = [];
     let swappedIndex = 0;
     for (const skill of skillsList) {
       if (skill.categoryId === categoryId) {
@@ -689,27 +744,9 @@ export default function DashboardClient() {
     }
 
     setSkillsList(newList);
-
-    try {
-      const res = await fetch('/api/skills', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'reorder',
-          ids: newList.map((s) => s.id),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        toast.error(data.error || 'Failed to save skills order');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('An error occurred while reordering skills');
-    }
   };
 
-  const handleMoveProject = async (index: number, direction: 'up' | 'down') => {
+  const handleMoveProject = (index: number, direction: 'up' | 'down') => {
     const nextIndex = direction === 'up' ? index - 1 : index + 1;
     if (nextIndex < 0 || nextIndex >= projects.length) return;
 
@@ -719,23 +756,121 @@ export default function DashboardClient() {
     newList[nextIndex] = temp;
 
     setProjects(newList);
+  };
 
+  const handleMoveEducation = (index: number, direction: 'up' | 'down') => {
+    const nextIndex = direction === 'up' ? index - 1 : index + 1;
+    if (nextIndex < 0 || nextIndex >= educationList.length) return;
+
+    const newList = [...educationList];
+    const temp = newList[index];
+    newList[index] = newList[nextIndex];
+    newList[nextIndex] = temp;
+
+    setEducationList(newList);
+  };
+
+  const handleSaveSkillsOrder = async () => {
+    setSavingSkillsOrder(true);
+    try {
+      const res = await fetch('/api/skills', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          ids: skillsList.map((s) => s.id),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOriginalSkillsOrder(skillsList.map((s) => s.id));
+        toast.success('Skills order saved successfully!');
+      } else {
+        toast.error(data.error || 'Failed to save skills order');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while saving skills order');
+    } finally {
+      setSavingSkillsOrder(false);
+    }
+  };
+
+  const handleSaveCategoriesOrder = async () => {
+    setSavingCategoriesOrder(true);
+    try {
+      const res = await fetch('/api/skills/categories', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          ids: categoriesList.map((c) => c.id),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOriginalCategoriesOrder(categoriesList.map((c) => c.id));
+        toast.success('Categories order saved successfully!');
+      } else {
+        toast.error(data.error || 'Failed to save categories order');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while saving categories order');
+    } finally {
+      setSavingCategoriesOrder(false);
+    }
+  };
+
+  const handleSaveProjectsOrder = async () => {
+    setSavingProjectsOrder(true);
     try {
       const res = await fetch('/api/projects', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'reorder',
-          ids: newList.map((p) => p.id),
+          ids: projects.map((p) => p.id),
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.success) {
+      if (res.ok && data.success) {
+        setOriginalProjectsOrder(projects.map((p) => p.id));
+        toast.success('Projects order saved successfully!');
+      } else {
         toast.error(data.error || 'Failed to save projects order');
       }
     } catch (err) {
       console.error(err);
-      toast.error('An error occurred while reordering projects');
+      toast.error('An error occurred while saving projects order');
+    } finally {
+      setSavingProjectsOrder(false);
+    }
+  };
+
+  const handleSaveEducationOrder = async () => {
+    setSavingEducationOrder(true);
+    try {
+      const res = await fetch('/api/education', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reorder',
+          ids: educationList.map((e) => e.id),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOriginalEducationOrder(educationList.map((e) => e.id));
+        toast.success('Education order saved successfully!');
+      } else {
+        toast.error(data.error || 'Failed to save education order');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('An error occurred while saving education order');
+    } finally {
+      setSavingEducationOrder(false);
     }
   };
 
@@ -776,10 +911,7 @@ export default function DashboardClient() {
         {/* Navigation Sidebar (Manage CV & Profile is now at the top) */}
         <aside className="lg:col-span-1 space-y-2">
           <button
-            onClick={() => {
-              setActiveTab('cv');
-              setError(null);
-            }}
+            onClick={() => handleTabSwitch('cv')}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
               activeTab === 'cv'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
@@ -791,10 +923,7 @@ export default function DashboardClient() {
           </button>
 
           <button
-            onClick={() => {
-              setActiveTab('education');
-              setError(null);
-            }}
+            onClick={() => handleTabSwitch('education')}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
               activeTab === 'education'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
@@ -806,10 +935,7 @@ export default function DashboardClient() {
           </button>
 
           <button
-            onClick={() => {
-              setActiveTab('skills');
-              setError(null);
-            }}
+            onClick={() => handleTabSwitch('skills')}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
               activeTab === 'skills'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
@@ -821,10 +947,7 @@ export default function DashboardClient() {
           </button>
 
           <button
-            onClick={() => {
-              setActiveTab('projects');
-              setError(null);
-            }}
+            onClick={() => handleTabSwitch('projects')}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
               activeTab === 'projects'
                 ? 'bg-violet-600/10 text-violet-400 border-violet-500/20'
@@ -1219,7 +1342,28 @@ export default function DashboardClient() {
 
               {/* Projects List */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Projects ({projects.length})</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Projects ({projects.length})</h3>
+                  {isProjectsOrderDirty && (
+                    <button
+                      onClick={handleSaveProjectsOrder}
+                      disabled={savingProjectsOrder}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-violet-600 hover:bg-violet-750 text-white rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {savingProjectsOrder ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={14} />
+                          Save Projects Order
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
 
                 {projects.length === 0 ? (
                   <p className="text-zinc-500 text-sm italic">No projects found. Add one above.</p>
@@ -1376,13 +1520,34 @@ export default function DashboardClient() {
 
               {/* Education List */}
               <div className="space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Timeline ({educationList.length})</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Timeline ({educationList.length})</h3>
+                  {isEducationOrderDirty && (
+                    <button
+                      onClick={handleSaveEducationOrder}
+                      disabled={savingEducationOrder}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-violet-600 hover:bg-violet-750 text-white rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {savingEducationOrder ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={14} />
+                          Save Education Order
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
 
                 {educationList.length === 0 ? (
                   <p className="text-zinc-500 text-sm italic">No entries found. Add one above.</p>
                 ) : (
                   <div className="grid grid-cols-1 gap-4">
-                    {educationList.map((item) => (
+                    {educationList.map((item, index) => (
                       <div
                         key={`admin-edu-${item.id}`}
                         className="flex items-center justify-between p-5 rounded-2xl bg-zinc-900/30 border border-zinc-800/80 hover:border-zinc-800 transition-colors"
@@ -1394,6 +1559,22 @@ export default function DashboardClient() {
                         </div>
                         <div className="flex items-center gap-2 ml-4">
                           <button
+                            onClick={() => handleMoveEducation(index, 'up')}
+                            disabled={index === 0}
+                            className={`p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-violet-400 rounded-lg transition-colors border border-zinc-800 ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            title="Move Up"
+                          >
+                            <ArrowUp size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleMoveEducation(index, 'down')}
+                            disabled={index === educationList.length - 1}
+                            className={`p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-violet-400 rounded-lg transition-colors border border-zinc-800 ${index === educationList.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            title="Move Down"
+                          >
+                            <ArrowDown size={16} />
+                          </button>
+                          <button
                             onClick={() => startEditEducation(item)}
                             className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-violet-400 rounded-lg transition-colors border border-zinc-800"
                             title="Edit"
@@ -1402,7 +1583,7 @@ export default function DashboardClient() {
                           </button>
                           <button
                             onClick={() => handleDeleteEducation(item.id)}
-                            className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-rose-400 rounded-lg transition-colors border border-zinc-800"
+                            className="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-rose-455 rounded-lg transition-colors border border-zinc-800"
                             title="Delete"
                           >
                             <Trash2 size={16} />
@@ -1467,7 +1648,28 @@ export default function DashboardClient() {
                 <div className="w-full h-px bg-zinc-800" />
                 
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Existing Categories ({categoriesList.length})</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Existing Categories ({categoriesList.length})</h3>
+                    {isCategoriesOrderDirty && (
+                      <button
+                        onClick={handleSaveCategoriesOrder}
+                        disabled={savingCategoriesOrder}
+                        className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-violet-600 hover:bg-violet-750 text-white rounded transition-colors disabled:opacity-50"
+                      >
+                        {savingCategoriesOrder ? (
+                          <>
+                            <Loader2 className="w-2.5 h-2.5 animate-spin mr-1" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={10} className="mr-1" />
+                            Save Categories Order
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                   {categoriesList.length === 0 ? (
                     <p className="text-zinc-650 text-xs italic">No categories created yet.</p>
                   ) : (
@@ -1596,7 +1798,28 @@ export default function DashboardClient() {
 
                 {/* Skills List */}
                 <div className="space-y-6">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Skill Badges</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Current Skill Badges</h3>
+                    {isSkillsOrderDirty && (
+                      <button
+                        onClick={handleSaveSkillsOrder}
+                        disabled={savingSkillsOrder}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-violet-600 hover:bg-violet-750 text-white rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {savingSkillsOrder ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={14} />
+                            Save Skills Order
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
 
                   {skillsList.length === 0 ? (
                     <p className="text-zinc-500 text-sm italic">No skills found. Add one above.</p>

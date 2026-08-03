@@ -57,15 +57,17 @@ export default function Hero({ fullName, professionalTitle, cvUrl, heroDescripti
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 pt-4">
-              <a
-                href={cvUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold rounded-xl bg-zinc-900 text-white hover:bg-zinc-855 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 transition-colors shadow-lg shadow-black/5 dark:shadow-white/5"
-              >
-                <Download size={16} />
-                Download CV
-              </a>
+              {cvUrl ? (
+                <a
+                  href={cvUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 transition-colors shadow-lg shadow-black/5 dark:shadow-white/5"
+                >
+                  <Download size={16} />
+                  Download CV
+                </a>
+              ) : null}
               <a
                 href="#contact"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold rounded-xl bg-zinc-100 text-zinc-900 border border-zinc-200 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-white dark:border-zinc-800 dark:hover:bg-zinc-800 dark:hover:border-zinc-700 transition-colors"

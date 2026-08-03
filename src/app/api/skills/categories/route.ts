@@ -51,9 +51,10 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, data: category });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create category error:', error);
-    if (error.code === 'P2002') {
+    const err = error as { code?: string };
+    if (err.code === 'P2002') {
       return NextResponse.json(
         { success: false, error: 'A category with this name already exists' },
         { status: 400 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ExternalLink, Code, Sun, Moon, Laptop, Server, Globe } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const GithubIcon = ({ size = 18 }: { size?: number }) => (
   <svg
@@ -39,12 +40,19 @@ export default function ProjectDetailClient({ project }: { project: Project }) {
     // Initial theme set from localStorage or document class
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     const initialTheme = savedTheme || (document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    setTheme(initialTheme);
+    
+    // Set theme asynchronously to avoid synchronous setState inside useEffect warning
+    const timer = setTimeout(() => {
+      setTheme(initialTheme);
+    }, 0);
+
     if (initialTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleTheme = () => {
@@ -67,13 +75,13 @@ export default function ProjectDetailClient({ project }: { project: Project }) {
       {/* Blurred Sticky Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200/50 dark:border-zinc-800/50 py-4 shadow-lg shadow-black/5 dark:shadow-black/20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <a
+          <Link
             href="/"
             className="group inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
           >
             <ArrowLeft size={16} className="transform group-hover:-translate-x-1 transition-transform" />
             Back to Portfolio
-          </a>
+          </Link>
           
           <button
             onClick={toggleTheme}

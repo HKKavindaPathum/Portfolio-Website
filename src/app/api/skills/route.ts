@@ -45,16 +45,17 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, categoryId } = body;
 
-    if (!name || !categoryId) {
+    const numCatId = Number(categoryId);
+    if (!name || !categoryId || isNaN(numCatId)) {
       return NextResponse.json(
-        { success: false, error: 'Name and categoryId are required' },
+        { success: false, error: 'Name and valid numeric categoryId are required' },
         { status: 400 }
       );
     }
 
     // Get current max order for this category
     const maxSkill = await prisma.skill.findFirst({
-      where: { categoryId: Number(categoryId) },
+      where: { categoryId: numCatId },
       orderBy: { order: 'desc' },
       select: { order: true },
     });
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     const skill = await prisma.skill.create({
       data: {
         name,
-        categoryId: Number(categoryId),
+        categoryId: numCatId,
         order,
       },
       include: {
@@ -120,18 +121,21 @@ export async function PUT(request: Request) {
 
     const { id, name, categoryId } = body;
 
-    if (!id || !name || !categoryId) {
+    const numId = Number(id);
+    const numCatId = Number(categoryId);
+
+    if (!id || isNaN(numId) || !name || !categoryId || isNaN(numCatId)) {
       return NextResponse.json(
-        { success: false, error: 'ID, name, and categoryId are required' },
+        { success: false, error: 'Valid numeric ID, name, and valid numeric categoryId are required' },
         { status: 400 }
       );
     }
 
     const skill = await prisma.skill.update({
-      where: { id: Number(id) },
+      where: { id: numId },
       data: {
         name,
-        categoryId: Number(categoryId),
+        categoryId: numCatId,
       },
       include: {
         category: true,
@@ -167,14 +171,14 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const idStr = searchParams.get('id');
 
-    if (!idStr) {
+    const id = Number(idStr);
+    if (!idStr || isNaN(id)) {
       return NextResponse.json(
-        { success: false, error: 'Skill ID is required' },
+        { success: false, error: 'Valid numeric Skill ID is required' },
         { status: 400 }
       );
     }
 
-    const id = Number(idStr);
     await prisma.skill.delete({
       where: { id },
     });

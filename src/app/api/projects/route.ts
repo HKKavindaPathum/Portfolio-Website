@@ -113,14 +113,24 @@ export async function PUT(request: Request) {
 
     const { id, title, description, techStack, githubLink, githubBackendLink, liveLink, imageUrl, imageFile } = body;
 
-    if (!id || !title || !description || !techStack) {
+    const numericId = Number(id);
+    if (!id || isNaN(numericId) || !title || !description || !techStack) {
       return NextResponse.json(
-        { success: false, error: 'ID, title, description, and techStack are required' },
+        { success: false, error: 'Valid numeric ID, title, description, and techStack are required' },
         { status: 400 }
       );
     }
 
-    const updateData: any = {
+    const updateData: {
+      title: string;
+      description: string;
+      techStack: string;
+      githubLink: string | null;
+      githubBackendLink: string | null;
+      liveLink: string | null;
+      imageUrl?: string | null;
+      imageFile?: string | null;
+    } = {
       title,
       description,
       techStack,
@@ -137,7 +147,7 @@ export async function PUT(request: Request) {
     }
 
     const project = await prisma.project.update({
-      where: { id: Number(id) },
+      where: { id: numericId },
       data: updateData,
     });
 
@@ -162,14 +172,14 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const idStr = searchParams.get('id');
 
-    if (!idStr) {
+    const id = Number(idStr);
+    if (!idStr || isNaN(id)) {
       return NextResponse.json(
-        { success: false, error: 'Project ID is required' },
+        { success: false, error: 'Valid numeric Project ID is required' },
         { status: 400 }
       );
     }
 
-    const id = Number(idStr);
     await prisma.project.delete({
       where: { id },
     });

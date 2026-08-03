@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Terminal, Home, AlertCircle } from 'lucide-react';
+import { Home, AlertCircle } from 'lucide-react';
 
 export const metadata = {
   title: '404 - Page Not Found | Portfolio',

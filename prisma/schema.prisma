@@ -50,6 +50,7 @@ model Education {
   institution String
   period      String
   description String @db.Text
+  order       Int    @default(0)
 }
 
 model Skill {
